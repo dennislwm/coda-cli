@@ -28,14 +28,35 @@ class Pycoda():
   |                                C L A S S   R E Q U E S T S                               |
   |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
   def list_docs(self):
+    """ Returns a list of documents """
     list = self.coda.list_docs(is_owner=True)
     strRet=""
     for doc in list:
       if doc == "items":
         for obj in list[doc]:
           strRet=strRet+json.dumps(obj)
+    return strRet
 
-    print(strRet)
+  def list_sections(self, strDocId):
+    """ Returns a list of sections in DocId """
+    assert(strDocId)
+    list = self.coda.list_sections(strDocId)
+    strRet=""
+    for doc in list:
+      if doc == "items":
+        for obj in list[doc]:
+          strRet=strRet+json.dumps(obj)
+    return strRet
+
+  def list_tables(self, strDocId):
+    """ Returns a list of tables in DocId """
+    assert(strDocId)
+    list = self.coda.list_tables(strDocId)
+    strRet=""
+    for doc in list:
+      if doc == "items":
+        for obj in list[doc]:
+          strRet=strRet+json.dumps(obj)
     return strRet
 
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|

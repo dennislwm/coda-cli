@@ -38,6 +38,14 @@ class Coda(object):
     result = self.objCoda.list_docs()
     print( result )
 
+  def list_sections(self, strDocId):
+    result = self.objCoda.list_sections(strDocId)
+    print ( result )
+
+  def list_tables(self, strDocId):
+    result = self.objCoda.list_tables(strDocId)
+    print ( result )
+
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|
   |                        I N T E R N A L   C L A S S   M E T H O D S                       |
   |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
@@ -114,9 +122,33 @@ def clickMain(ctx, out):
 @click.pass_obj
 #---------
 # Function 
-def list_docs(objBiblia):
+def list_docs(objCoda):
   """ Returns the table of contents of a bible """
-  objBiblia.list_docs()
+  objCoda.list_docs()
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                         L I S T _ S E C T I O N S   C O M M A N D                        |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.pass_obj
+#---------
+# Function 
+def list_sections(objCoda, doc):
+  """ Returns the table of contents of a bible """
+  objCoda.list_sections(doc)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                           L I S T _ T A B L E S   C O M M A N D                          |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.pass_obj
+#---------
+# Function 
+def list_tables(objCoda, doc):
+  """ Returns the table of contents of a bible """
+  objCoda.list_tables(doc)
 
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
 |                                M A I N   P R O C E D U R E                               |
