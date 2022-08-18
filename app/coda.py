@@ -96,6 +96,7 @@ class Coda(object):
 |                                  M A I N   C O M M A N D                                 |
 |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
 @click.group( context_settings=dict(help_option_names=['-h', '--help']) )
+@click.version_option("0.1")
 #---------------
 # Choice options
 @click.option('--out', '-o', default='text', 
@@ -111,7 +112,7 @@ class Coda(object):
 # Main function
 def clickMain(ctx, out):
   """
-  This script prints bible data
+  This script prints coda data
   """
   ctx.obj = Coda(out)
 
@@ -123,7 +124,7 @@ def clickMain(ctx, out):
 #---------
 # Function 
 def list_docs(objCoda):
-  """ Returns the table of contents of a bible """
+  """ Returns the list of documents in Coda """
   objCoda.list_docs()
 
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
@@ -135,7 +136,7 @@ def list_docs(objCoda):
 #---------
 # Function 
 def list_sections(objCoda, doc):
-  """ Returns the table of contents of a bible """
+  """ Returns the list of sections in a doc """
   objCoda.list_sections(doc)
 
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
@@ -147,7 +148,7 @@ def list_sections(objCoda, doc):
 #---------
 # Function 
 def list_tables(objCoda, doc):
-  """ Returns the table of contents of a bible """
+  """ Returns the list of tables in a doc """
   objCoda.list_tables(doc)
 
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
