@@ -1,4 +1,4 @@
-.PHONY: default install_freeze install_new install_pipfile run shell shell_clean
+.PHONY: default install_freeze install_new install_pipfile install_test run shell shell_clean test test_verbose
 
 default: run
 
@@ -24,3 +24,9 @@ shell:
 
 shell_clean:
 	pipenv --rm
+
+test: 
+	PYTHONPATH=.:../ pytest
+
+test_verbose: 
+	PYTHONPATH=.:../ pytest -v -s

@@ -96,7 +96,7 @@ class Coda(object):
 |                                  M A I N   C O M M A N D                                 |
 |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
 @click.group( context_settings=dict(help_option_names=['-h', '--help']) )
-@click.version_option("0.1")
+@click.version_option("v0.1")
 #---------------
 # Choice options
 @click.option('--out', '-o', default='text', 

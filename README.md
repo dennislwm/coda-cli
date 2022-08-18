@@ -36,9 +36,10 @@ In no particular order, my plan is to use the following resources to learn and r
 
 | Title | Author | Publisher Date [Short Code]
 |---|---|---|
-| GitHub Repo: [dennislwm/archiveso](https://github.com/dennislwm/archiveso) | Dennis Lee | 2022
 | E-Book: Shape Up | Ryan Singer | Basecamp 2021
 | GitHub Repo: [Blasterai/codaio](https://github.com/Blasterai/codaio) | BlasterAI | 2022
+| E-Doc: [Click](https://click.palletsprojects.com) | Pallets | 2022
+| GitHub Repo: [dennislwm/archiveso](https://github.com/dennislwm/archiveso) | Dennis Lee | 2022
 
 # Place, Affordance, Connection
 
@@ -58,7 +59,7 @@ This project uses several methods and products to optimize your workflow.
 - Use a static analyzer (**prospector**) to help write your clean code.
 - Use a build tool (**Makefile**) to automate your development tasks.
 - Use a package manager (**Pipenv**) to manage your dependencies.
-- Use a testing framework (**pytest**) to automate your testing.
+- Use a testing framework (**pytest** and **click.testing**) to automate your testing.
 - Use a containerization platform (**Docker**) to run your application in any environment.
 - Use a continuous integration pipeline (**CircleCI**) to automate your static analysis and image deployment.
 - Use an artifactory (**Docker Hub**) to store and pull your image.
@@ -93,7 +94,7 @@ We set a time constraint of 9 workdays, for shaping, and an additional 9 workday
   - [Install dependencies](doc/shape01.md#install-dependencies)
   - [Create a Makefile](doc/shape01.md#create-a-makefile)
   - [Create a Main Application](doc/shape01.md#create-a-main-application)
-- [ ] [Create test cases for each command with Python](doc/shape02.md#create-test-cases-for-each-command-with-python) (1)
+- [X] [Create test cases for each command with Python](doc/shape02.md#create-test-cases-for-each-command-with-python) (1)
   - [Test Driven Development](doc/shape02.md#test-driven-development)
   - [Install developer dependencies](doc/shape02.md#install-developer-dependencies)
   - [Create a test file](doc/shape02.md#create-a-test-file)
