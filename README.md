@@ -8,7 +8,7 @@
 [![dennislwm](https://circleci.com/gh/dennislwm/coda-cli.svg?style=shield)](https://app.circleci.com/pipelines/github/dennislwm/coda-cli)
 ![GitHub last commit](https://img.shields.io/github/last-commit/dennislwm/coda-cli?color=red&style=plastic)
 
-This application is a Python CLI that interacts with Coda.io, which is a SaaS. This project consist of (1) python CLI; (2) CI pipeline that automates your static analysis and image deployment; and (3) CD pipeline to deploy a custom Docker image that interacts with Coda.io.
+This application is a Python CLI that interacts with Coda.io, which is a SaaS. This project consist of (1) python CLI; (2) CI pipeline that automates your static analysis and image deployment; and (3) CD pipeline to deploy a custom Docker image that interacts with Coda.io (Blocked).
 
 <!-- TOC -->
 
@@ -21,6 +21,8 @@ This application is a Python CLI that interacts with Coda.io, which is a SaaS. T
   - [Prerequisites](#prerequisites)
   - [Run Coda](#run-coda)
 - [Shaping](#shaping)
+- [Building](#building)
+- [Limitation](#limitation)
 
 <!-- /TOC -->
 
@@ -44,7 +46,7 @@ In no particular order, my plan is to use the following resources to learn and r
 # Place, Affordance, Connection
 
 * Places users can navigate
-  * Circle CI `https://circleci.com`
+  * Circle CI `https://app.circleci.com/settings/project/github/dennislwm/coda-cli`
   * GitLab CD `https://gitlab.com` 
   * Docker Hub e.g. `https://hub.docker.com/repository/docker/dennislwm/coda-cli`
   
@@ -63,7 +65,7 @@ This project uses several methods and products to optimize your workflow.
 - Use a containerization platform (**Docker**) to run your application in any environment.
 - Use a continuous integration pipeline (**CircleCI**) to automate your static analysis and image deployment.
 - Use an artifactory (**Docker Hub**) to store and pull your image.
-- Use a continuous delivery pipeline (**GitLab**) to automate your Docker container deployment and interaction with Coda.io
+- Use a continuous delivery pipeline (**GitLab**) to automate your Docker container deployment and interaction with Coda.io (Blocked: Coda.io doesn't support POST request for many of its resources.)
 
 ---
 # Usage
@@ -89,22 +91,40 @@ As shaping and building have independent cycles, we will define shaping as any w
 
 We set a time constraint of 9 workdays, for shaping, and an additional 9 workdays for building. Hence, the total time for this project is approximately 20 workdays with a cool-down of 2 workdays.
 
-- [X] [Create a single CLI command with Python](doc/shape01.md#create-a-single-cli-command-with-python) (2)
+- [X] [Create a single CLI command with Python](doc/shape01.md#create-a-single-cli-command-with-python)
   - [Create a virtual environment](doc/shape01.md#create-a-virtual-environment)
   - [Install dependencies](doc/shape01.md#install-dependencies)
   - [Create a Makefile](doc/shape01.md#create-a-makefile)
   - [Create a Main Application](doc/shape01.md#create-a-main-application)
-- [X] [Create test cases for each command with Python](doc/shape02.md#create-test-cases-for-each-command-with-python) (1)
+- [X] [Create test cases for each command with Python](doc/shape02.md#create-test-cases-for-each-command-with-python)
   - [Test Driven Development](doc/shape02.md#test-driven-development)
   - [Install developer dependencies](doc/shape02.md#install-developer-dependencies)
   - [Create a test file](doc/shape02.md#create-a-test-file)
-- [X] [Create a Dockerfile and test it locally](doc/shape03.md#create-a-dockerfile-and-test-it-locally) (1)
+- [X] [Create a Dockerfile and test it locally](doc/shape03.md#create-a-dockerfile-and-test-it-locally)
   - [Create a Dockerfile](doc/shape03.md#create-a-dockerfile)
   - [Generate a requirements file](doc/shape03.md#generate-a-requirements-file)
-- [X] [Require status checks to pass before merging PR](doc/shape04.md#require-status-checks-to-pass-before-merging-pr) (1)
+- [X] [Require status checks to pass before merging PR](doc/shape04.md#require-status-checks-to-pass-before-merging-pr)
   - [Status Checks](doc/shape04.md#status-checks)
   - [Continuous Integration](doc/shape04.md#continuous-integration)
-- [ ] [Build, test, tag and upload our app image using CI](doc/shape05.md#build-test-tag-and-upload-our-app-image-using-ci) (1)
+- [X] [Build, test, tag and upload our app image using CI](doc/shape05.md##build-test-tag-and-upload-our-app-image-using-ci)
   - [Workflows](doc/shape05.md#workflows)
   - [Sequential job execution with dependency](doc/shape05.md#sequential-job-execution-with-dependency)
   - [Create an access token for Docker Hub](doc/shape05.md#create-an-access-token-for-docker-hub)
+
+The project started on 17-Aug-2022 and is currently a work-in-progress and ahead of schedule. The shaping cycle was completed on 19-Aug-2022 (2 days), while the building cycle is in progress.
+
+---
+# Building
+
+This steps are repeatable, i.e. create and test a command.
+
+- [ ] [Build and test a command and return its output](doc/build01.md#build-and-test-a-command-and-return-its-output)
+  - [Test driven development of a command](doc/build01.md#test-driven-development-of-a-command)
+  - [Create test case](doc/build01.md#create-test-case)
+  - [Configure build](doc/build01.md#configure-build)
+  - [Build the command](doc/build01.md#build-the-command)
+
+---
+# Limitation
+
+* The CD pipeline is currently blocked, because Coda.io API does not support POST requests for many of its resources. 

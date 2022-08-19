@@ -139,3 +139,38 @@ Navigate to your GitHub repo, and click on the repo **Settings** --> **Branches*
 </details>
 
 Each time you make a PR for your repo, CCI automatically runs your `config.yml` file. If any steps fail, then you will not be able to merge your PR with the `main` branch.
+
+5. Create a `docker-compose-test.yml` file in the path `app/`. Add the following lines of code:
+
+```yml
+version: '3.7'
+
+services:
+  # Pipeline actions
+  tests:
+    image: coda-cli:latest
+    environment:
+      - CODA_API_KEY
+    entrypoint: /usr/local/bin/pytest
+```
+
+6. Edit the `config.yml` file in the path `.circleci/`. Append the following lines of code to `jobs.static-analysis.steps` section:
+
+```yml
+jobs:
+  static-analysis:
+    ...
+    steps:
+      ...
+      - run:
+          name: "Run unit tests"
+          command: cd app && docker-compose -f docker-compose-test.yml up -d
+```
+
+7. Edit the `Makefile` file in the path `app/`. Then modify the following lines of code:
+
+```makefile
+ci_freeze:
+  ...
+	echo "pytest==6.2.4" >> ./requirements.txt
+```

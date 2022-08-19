@@ -1,0 +1,9 @@
+version: '3.7'
+
+services:
+  # Pipeline actions
+  tests:
+    image: coda-cli:latest
+    environment:
+      - CODA_API_KEY
+    entrypoint: /usr/local/bin/pytest

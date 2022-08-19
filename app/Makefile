@@ -1,4 +1,4 @@
-.PHONY: default ci_build ci_freeze docker_build docker_clean docker_run install_freeze install_new install_pipfile install_test run shell shell_clean test test_verbose
+.PHONY: default ci_build ci_freeze ci_test_build ci_test_freeze docker_build docker_clean docker_run install_freeze install_new install_test run shell shell_clean test test_verbose
 
 default: run
 
@@ -8,7 +8,16 @@ ci_build: ci_freeze
 ci_freeze:
 	pip3 install pipreqs
 	pipreqs --ignore tests . --force
+	pip3 uninstall -y pipreqs
+
+ci_test_build: ci_test_freeze
+	DOCKER_BUILDKIT=1 docker build -t coda-cli .
+
+ci_test_freeze:
+	pip3 install pipreqs
+	pipreqs --ignore tests . --force
 	echo "prospector==1.6.0" >> ./requirements.txt
+	echo "pytest==6.2.4" >> ./requirements.txt
 	pip3 uninstall -y pipreqs
 
 docker_build: install_freeze
@@ -26,9 +35,6 @@ install_freeze:
 install_new:
 	pipenv install click==8.1.3 codaio==0.6.10
 	pipenv install --dev pytest=6.2.4
-
-install_pipfile:
-	pipenv install --dev
 
 run:
 	python coda.py
