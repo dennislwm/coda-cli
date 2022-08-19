@@ -76,7 +76,13 @@ Select **Organization Settings** --> **VCS** --> **Manage GitHub Checks**.
 
 Select which repo you want to utilize checks and click the **Install** button.
 
-2. Create a file `.config.yml` in the `.circleci/` folder of your repo. Add the following lines to the file:
+2. Add main branch to CCI project.
+
+In the CCI console, navigate to Projects > your GitHub repo > Set Up Project.
+
+Select your GitHub repo, then type `main` in the branch. Click Set Up Project.
+
+3. Create a file `.config.yml` in the `.circleci/` folder of your repo. Add the following lines to the file:
 
 ```yml
 # Use the latest 2.1 version of CircleCI pipeline process engine.

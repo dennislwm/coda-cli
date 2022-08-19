@@ -24,19 +24,6 @@ Base time: 1 workday (Max: 2)
 
 # Place, Affordance, Connection
 
-* Places users can navigate
-  * Docker Flask server on a port `8080`, e.g. `https://base.url:8080`
-    * Status endpoint `/`
-    * Application endpoint `/api/archiveso`
-  
-* Affordance users can act
-  * App version `GET https://base.url:8080/`
-  * List all `GET https://base.url:8080/api/archiveso`
-
-* Connection users are taken to
-  * Postman --> `GET https://base.url:8080/` --> Docker --> `main.py` --> HTTP response
-  * Postman --> `GET https://base.url:8080/api/archiveso` --> Docker --> `main.py` --> `clsArchiveso.py` --> `/path/to/archivebox` --> `archivebox.cli.list()` --> String --> HTTP response
-
 # Create a Dockerfile
 
 1. Create a file `Docker` in the `app` folder. Add the following lines to the file:
