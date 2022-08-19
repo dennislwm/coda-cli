@@ -31,6 +31,3 @@ workflows:
   static-analysis-workflow:
     jobs:
       - static-analysis
-      - deploy-image:
-          requires:
-            - static-analysis
