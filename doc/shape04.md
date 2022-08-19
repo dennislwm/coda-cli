@@ -124,7 +124,7 @@ The root of our repo is initially checked out to the default working directory `
 
 The first `run` builds our custom Docker image, while the second `run` executes the `docker-compose.yml` that performs the static-analysis.
 
-3. To take full advantage of our configured CI system, we need to ensure that we check the build before merging it into the main branch.
+4. To take full advantage of our configured CI system, we need to ensure that we check the build before merging it into the main branch.
 
 Navigate to your GitHub repo, and click on the repo **Settings** --> **Branches** --> **Add Rule**. 
 

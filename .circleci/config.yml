@@ -24,6 +24,22 @@ jobs:
       - run:
           name: "Run static analysis"
           command: cd app && docker-compose up -d
+  deploy-image:
+    docker:
+      - image: cimg/python:3.9.10
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 19.03.13
+      - run:
+          name: "Build image"
+          command: cd app && make ci_build
+      - run:
+          name: "Publish image to Docker Hub"
+          command: |
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker tag coda-cli:latest $DOCKERHUB_USERNAME/coda-cli:latest
+              docker push $DOCKERHUB_USERNAME/coda-cli:latest
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -31,3 +47,6 @@ workflows:
   static-analysis-workflow:
     jobs:
       - static-analysis
+      - deploy-image:
+          requires:
+            - static-analysis

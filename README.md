@@ -104,7 +104,7 @@ We set a time constraint of 9 workdays, for shaping, and an additional 9 workday
 - [X] [Require status checks to pass before merging PR](doc/shape04.md#require-status-checks-to-pass-before-merging-pr) (1)
   - [Status Checks](doc/shape04.md#status-checks)
   - [Continuous Integration](doc/shape04.md#continuous-integration)
-- [ ] [Build, test, tag and upload our web app image using CI](doc/shape05.md#build-test-tag-and-upload-our-web-app-image-using-ci) (1)
+- [ ] [Build, test, tag and upload our app image using CI](doc/shape05.md#build-test-tag-and-upload-our-app-image-using-ci) (1)
   - [Workflows](doc/shape05.md#workflows)
   - [Sequential job execution with dependency](doc/shape05.md#sequential-job-execution-with-dependency)
   - [Create an access token for Docker Hub](doc/shape05.md#create-an-access-token-for-docker-hub)
