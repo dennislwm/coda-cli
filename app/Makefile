@@ -6,7 +6,7 @@ ci_build: ci_freeze
 	DOCKER_BUILDKIT=1 docker build -t coda-cli .
 
 ci_freeze:
-  pip3 install pipreqs
+	pip3 install pipreqs
 	pipreqs --ignore tests . --force
 	echo "prospector==1.6.0" >> ./requirements.txt
 	pip3 uninstall -y pipreqs
@@ -31,7 +31,7 @@ install_pipfile:
 	pipenv install --dev
 
 run:
-  python coda.py
+	python coda.py
 
 shell:
 	pipenv shell
