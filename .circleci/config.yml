@@ -20,10 +20,13 @@ jobs:
           version: 19.03.13
       - run:
           name: "Build image"
-          command: cd app && make ci_build
+          command: cd app && make ci_test_build
       - run:
           name: "Run static analysis"
           command: cd app && docker-compose up -d
+      - run:
+          name: "Run unit tests"
+          command: cd app && docker-compose -f docker-compose-test.yml up -d
   deploy-image:
     docker:
       - image: cimg/python:3.9.10
