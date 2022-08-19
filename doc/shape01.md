@@ -157,11 +157,7 @@ You can use `make` to automate different parts of developing a Python app, like 
 default: run
 
 install_freeze:
-  pip3 install pipreqs
 	pipreqs --ignore tests . --force
-	echo "click==8.1.3" >> ./requirements.txt
-	echo "codaio==0.6.10" >> ./requirements.txt
-	pip3 uninstall -y pipreqs
 
 install_new:
 	pipenv install click==8.1.3 codaio==0.6.10

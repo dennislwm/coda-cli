@@ -1,0 +1,7 @@
+version: '3.7'
+
+services:
+  # Pipeline actions
+  prospector:
+    image: coda-cli:latest
+    entrypoint: /usr/local/bin/prospector
