@@ -1,0 +1,9 @@
+.dockerignore
+.DS_Store
+.env
+.git
+.gitignore
+.pytest_cache
+docker-compose.yml
+Makefile
+Pipfile*

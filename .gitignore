@@ -1,6 +1,7 @@
 #-----------------
 # Custom gitignore
 hello.py
+requirements.txt
 
 #-----------------
 # github/gitignore
