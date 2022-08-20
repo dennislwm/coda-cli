@@ -74,7 +74,7 @@ This project uses several methods and products to optimize your workflow.
 
 Before running the Python app on your local workstation, you need the following:
 
-- Generate a [CODA_API_KEY](https://coda.io) and save it in an `.env` file.
+- Generate a [CODA_API_KEY](https://coda.io) and save it in an `.env` file, or run the command `export CODA_API_KEY=<CODA_API_KEY>`
 - Download and install [jq](https://stedolan.github.io/jq/download/) command line application.
 - Install Python dependencies in a virtual environment within the `app` folder with `pipenv shell && make install_new`.
 
@@ -82,6 +82,20 @@ Before running the Python app on your local workstation, you need the following:
 
 ```sh
 python coda.py
+Usage: coda.py [OPTIONS] COMMAND [ARGS]...
+
+  This script prints coda data
+
+Options:
+  --version                       Show the version and exit.
+  -o, --out [csv|json|markdown|text]
+                                  Output type, default=text
+  -h, --help                      Show this message and exit.
+
+Commands:
+  list-docs      Returns the list of documents in Coda
+  list-sections  Returns the list of sections in a doc
+  list-tables    Returns the list of tables in a doc
 ```
 
 ---
@@ -112,6 +126,8 @@ We set a time constraint of 9 workdays, for shaping, and an additional 9 workday
   - [Create an access token for Docker Hub](doc/shape05.md#create-an-access-token-for-docker-hub)
 
 The project started on 17-Aug-2022 and is currently a work-in-progress and ahead of schedule. The shaping cycle was completed on 19-Aug-2022 (2 days), while the building cycle is in progress.
+
+> Note: All the `list-*` commands have been implemented and tested.
 
 ---
 # Building

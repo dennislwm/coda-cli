@@ -1,6 +1,7 @@
 #-----------------
 # Custom gitignore
 hello.py
+Pipfile.lock
 requirements.txt
 
 #-----------------

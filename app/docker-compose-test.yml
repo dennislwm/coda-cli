@@ -6,4 +6,5 @@ services:
     image: coda-cli:latest
     environment:
       - CODA_API_KEY
+      - PYTHONPATH
     entrypoint: /usr/local/bin/pytest
