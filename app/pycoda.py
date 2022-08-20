@@ -29,40 +29,98 @@ class Pycoda():
   |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
   def list_docs(self):
     """ Returns a list of documents """
-    list = self.coda.list_docs(is_owner=True)
-    strRet=""
-    for doc in list:
-      if doc == "items":
-        for obj in list[doc]:
-          strRet=strRet+json.dumps(obj)
-    return strRet
+    try:
+      list = self.coda.list_docs(is_owner=True)
+    except:
+      return "{}"
+    return self.json_items(list)
+
+  def list_controls(self, strDocId):
+    """ Returns a list of controls in DocId """
+    assert(strDocId)
+    try:
+      list = self.coda.list_controls(strDocId)
+    except:
+      return "{}"
+    return self.json_items(list)
+
+  def list_folders(self, strDocId):
+    """ Returns a list of folders in DocId """
+    assert(strDocId)
+    try:
+      list = self.coda.list_folders(strDocId)
+    except:
+      return "{}"
+    return self.json_items(list)
+
+  def list_formulas(self, strDocId):
+    """ Returns a list of formulas in DocId """
+    assert(strDocId)
+    try:
+      list = self.coda.list_formulas(strDocId)
+    except:
+      return "{}"
+    return self.json_items(list)
 
   def list_sections(self, strDocId):
     """ Returns a list of sections in DocId """
     assert(strDocId)
-    list = self.coda.list_sections(strDocId)
-    strRet=""
-    for doc in list:
-      if doc == "items":
-        for obj in list[doc]:
-          strRet=strRet+json.dumps(obj)
-    return strRet
+    try:
+      list = self.coda.list_sections(strDocId)
+    except:
+      return "{}"
+    return self.json_items(list)
 
   def list_tables(self, strDocId):
     """ Returns a list of tables in DocId """
     assert(strDocId)
-    list = self.coda.list_tables(strDocId)
-    strRet=""
-    for doc in list:
-      if doc == "items":
-        for obj in list[doc]:
-          strRet=strRet+json.dumps(obj)
-    return strRet
+    try:
+      list = self.coda.list_tables(strDocId)
+    except:
+      return "{}"
+    return self.json_items(list)
+
+  def list_views(self, strDocId):
+    """ Returns a list of views in DocId """
+    assert(strDocId)
+    try:
+      list = self.coda.list_views(strDocId)
+    except:
+      return "{}"
+    return self.json_items(list)
+
+  def list_columns(self, strDocId, strTableId):
+    """ Returns a list of columns in TableId """
+    assert(strDocId)
+    assert(strTableId)
+    try:
+      list = self.coda.list_columns(strDocId, strTableId)
+    except:
+      return "{}"
+    return self.json_items(list)
+
+  def list_rows(self, strDocId, strTableId):
+    """ Returns a list of rows in TableId """
+    assert(strDocId)
+    assert(strTableId)
+    try:
+      list = self.coda.list_rows(strDocId, strTableId)
+    except:
+      return "{}"
+    return self.json_items(list)
 
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|
   |                                 C L A S S   M E T H O D S                                |
   |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
-  def json_error():
+  def json_items(self, dictItems):
+    strRet=""
+    for key in dictItems:
+      if key == "items":
+        for val in dictItems[key]:
+          strRet=strRet+json.dumps(val)
+    return strRet
+
+  def json_error(self):
     jsnRet = json.dumps({})
     jsnRet['error_code'] = 1
     jsnRet['error_msg'] = 'Failed request'

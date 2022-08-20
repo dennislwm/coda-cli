@@ -38,12 +38,36 @@ class Coda(object):
     result = self.objCoda.list_docs()
     print( result )
 
+  def list_controls(self, strDocId):
+    result = self.objCoda.list_controls(strDocId)
+    print ( result )
+
+  def list_folders(self, strDocId):
+    result = self.objCoda.list_folders(strDocId)
+    print ( result )
+
+  def list_formulas(self, strDocId):
+    result = self.objCoda.list_formulas(strDocId)
+    print ( result )
+
   def list_sections(self, strDocId):
     result = self.objCoda.list_sections(strDocId)
     print ( result )
 
   def list_tables(self, strDocId):
     result = self.objCoda.list_tables(strDocId)
+    print ( result )
+
+  def list_views(self, strDocId):
+    result = self.objCoda.list_views(strDocId)
+    print ( result )
+
+  def list_columns(self, strDocId, strTableId):
+    result = self.objCoda.list_columns(strDocId, strTableId)
+    print ( result )
+
+  def list_rows(self, strDocId, strTableId):
+    result = self.objCoda.list_rows(strDocId, strTableId)
     print ( result )
 
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|
@@ -128,6 +152,42 @@ def list_docs(objCoda):
   objCoda.list_docs()
 
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                         L I S T _ C O N T R O L S   C O M M A N D                        |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.pass_obj
+#---------
+# Function 
+def list_controls(objCoda, doc):
+  """ Returns the list of controls in a doc """
+  objCoda.list_controls(doc)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                          L I S T _ F O L D E R S   C O M M A N D                         |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.pass_obj
+#---------
+# Function 
+def list_folders(objCoda, doc):
+  """ Returns the list of folders in a doc """
+  objCoda.list_folders(doc)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                         L I S T _ F O R M U L A S   C O M M A N D                        |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.pass_obj
+#---------
+# Function 
+def list_formulas(objCoda, doc):
+  """ Returns the list of formulas in a doc """
+  objCoda.list_formulas(doc)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
 |                         L I S T _ S E C T I O N S   C O M M A N D                        |
 |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
 @clickMain.command()
@@ -150,6 +210,44 @@ def list_sections(objCoda, doc):
 def list_tables(objCoda, doc):
   """ Returns the list of tables in a doc """
   objCoda.list_tables(doc)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                            L I S T _ V I E W S   C O M M A N D                           |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.pass_obj
+#---------
+# Function 
+def list_views(objCoda, doc):
+  """ Returns the list of views in a doc """
+  objCoda.list_views(doc)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                          L I S T _ C O L U M N S   C O M M A N D                         |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.option('--table', required=True)
+@click.pass_obj
+#---------
+# Function 
+def list_columns(objCoda, doc, table):
+  """ Returns the list of columns in a table """
+  objCoda.list_columns(doc, table)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                             L I S T _ R O W S   C O M M A N D                            |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.option('--table', required=True)
+@click.pass_obj
+#---------
+# Function 
+def list_rows(objCoda, doc, table):
+  """ Returns the list of rows in a table """
+  objCoda.list_rows(doc, table)
 
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
 |                                M A I N   P R O C E D U R E                               |

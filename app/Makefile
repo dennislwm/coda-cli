@@ -34,7 +34,7 @@ install_freeze:
 
 install_new:
 	pipenv install click==8.1.3 codaio==0.6.10
-	pipenv install --dev pytest=6.2.4
+	pipenv install --dev pytest==6.2.4
 
 run:
 	python coda.py
