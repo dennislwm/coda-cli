@@ -13,48 +13,56 @@ This application is a Python CLI that interacts with Coda.io, which is a SaaS. T
 <!-- TOC -->
 
 - [coda-cli](#coda-cli)
-- [Overview](#overview)
-- [Things to learn and research](#things-to-learn-and-research)
-- [Place, Affordance, Connection](#place-affordance-connection)
-- [Workflow](#workflow)
+- [Introduction](#introduction)
+  - [Purpose](#purpose)
+  - [Audience](#audience)
+- [System Overview](#system-overview)
+  - [Benefits and Values](#benefits-and-values)
+  - [Workflow](#workflow)
+  - [Place, Affordance, Connection](#place-affordance-connection)
+  - [Limitation](#limitation)
+- [User Personas](#user-personas)
+  - [RACI Matrix](#raci-matrix)
+- [Requirements](#requirements)
+  - [Local workstation](#local-workstation)
 - [Usage](#usage)
-  - [Prerequisites](#prerequisites)
-  - [Run Coda](#run-coda)
+  - [Running coda-cli in your terminal](#running-coda-cli-in-your-terminal)
 - [Shaping](#shaping)
+  - [Creating a single CLI command](#creating-a-single-cli-command)
+  - [Creating test cases for each command](#creating-test-cases-for-each-command)
+  - [Creating a Dockerfile and testing it locally](#creating-a-dockerfile-and-testing-it-locally)
+  - [Requiring status checks to pass before merging PR](#requiring-status-checks-to-pass-before-merging-pr)
+  - [Building, testing, tagging and uploading our app image using CI](#building-testing-tagging-and-uploading-our-app-image-using-ci)
 - [Building](#building)
-- [Limitation](#limitation)
+  - [Building and testing a command and return its output](#building-and-testing-a-command-and-return-its-output)
+- [References](#references)
+  - [Things to learn and research](#things-to-learn-and-research)
 
 <!-- /TOC -->
 
 ---
-# Overview
+# 1. Introduction
+## 1.1. Purpose
 
-![Overview](img/overview.png)
+This document describes the `coda-cli` command-line wrapper for Coda.io API, an SaaS service that provides interactive documents similar to Notion, and Google Docs.
 
----
-# Things to learn and research
+## 1.2. Audience
 
-In no particular order, my plan is to use the following resources to learn and research. 
+The audience for this document includes:
 
-| Title | Author | Publisher Date [Short Code]
-|---|---|---|
-| E-Book: Shape Up | Ryan Singer | Basecamp 2021
-| GitHub Repo: [Blasterai/codaio](https://github.com/Blasterai/codaio) | BlasterAI | 2022
-| E-Doc: [Click](https://click.palletsprojects.com) | Pallets | 2022
-| GitHub Repo: [dennislwm/archiveso](https://github.com/dennislwm/archiveso) | Dennis Lee | 2022
+* User who will create and maintain YAML config files to deploy Coda documents using the CLI.
 
-# Place, Affordance, Connection
-
-* Places users can navigate
-  * Circle CI `https://app.circleci.com/settings/project/github/dennislwm/coda-cli`
-  * GitLab CD `https://gitlab.com` 
-  * Docker Hub e.g. `https://hub.docker.com/repository/docker/dennislwm/coda-cli`
-  
-* Affordance users can act
-  * Docker pull `docker pull dennislwm/coda-cli:latest`
+* DevSecOps Engineer who will develop the CLI, create unit tests, configure build tools, create and maintain continuous integration and deployment (CI/CD) pipelines, and write documentation.
 
 ---
-# Workflow
+# 2. System Overview
+## 2.1. Benefits and Values
+
+1. Currently, creating a Coda document requires the User to navigate the Coda user interface (UI) and perform click operations, which may be inefficient and error prone.
+
+2. This CLI allows the User to create and maintain YAML config files that defines a Coda document as code, hence reducing the error rate, while increasing reusability and adding version control for a document as code.
+
+## 2.2. Workflow
 
 This project uses several methods and products to optimize your workflow.
 - Use a version control system (**GitHub**) to track your changes and collaborate with others.
@@ -67,10 +75,37 @@ This project uses several methods and products to optimize your workflow.
 - Use an artifactory (**Docker Hub**) to store and pull your image.
 - Use a continuous delivery pipeline (**GitLab**) to automate your Docker container deployment and interaction with Coda.io (Blocked: Coda.io doesn't support POST request for many of its resources.)
 
----
-# Usage
+## 2.3. Place, Affordance, Connection
 
-## Prerequisites
+* Places users can navigate
+  * Circle CI `https://app.circleci.com/settings/project/github/dennislwm/coda-cli`
+  * GitLab CD `https://gitlab.com`
+  * Docker Hub e.g. `https://hub.docker.com/repository/docker/dennislwm/coda-cli`
+
+* Affordance users can act
+  * Docker pull `docker pull dennislwm/coda-cli:latest`
+
+## 2.4. Limitation
+
+* The CD pipeline is currently blocked, because Coda.io API does not support POST requests for many of its resources.
+
+---
+# 3. User Personas
+## 3.1 RACI Matrix
+
+| Category |                            Activity                             | User | DevSecOps |
+|:--------:|:---------------------------------------------------------------:|:----:|:---------:|
+|  Usage   |               Running `coda-cli` in your terminal               | R,A  |           |
+| Shaping  |                  Creating a single CLI command                  |      |    R,A    |
+| Shaping  |              Creating test cases for each command               |      |    R,A    |
+| Shaping  |          Creating a Dockerfile and testing it locally           |      |    R,A    |
+| Shaping  |        Requiring status checks to pass before merging PR        |      |    R,A    |
+| Shaping  | Building, testing, tagging and uploading our app image using CI |      |    R,A    |
+| Building |      Building and testing a command and return its output       |      |    R,A    |
+
+---
+# 4. Requirements
+## 4.1. Local workstation
 
 Before running the Python app on your local workstation, you need the following:
 
@@ -78,7 +113,10 @@ Before running the Python app on your local workstation, you need the following:
 - Download and install [jq](https://stedolan.github.io/jq/download/) command line application.
 - Install Python dependencies in a virtual environment within the `app` folder with `pipenv shell && make install_new`.
 
-## Run Coda
+---
+# 5. Usage
+
+## 5.1. Running `coda-cli` in your terminal
 
 ```sh
 python coda.py
@@ -99,27 +137,41 @@ Commands:
 ```
 
 ---
-# Shaping
+# 6. Shaping
 
 As shaping and building have independent cycles, we will define shaping as any work that does not involve implementation of code. This work may include evaluation, feasibility, comparison, research, etc.
 
 We set a time constraint of 9 workdays, for shaping, and an additional 9 workdays for building. Hence, the total time for this project is approximately 20 workdays with a cool-down of 2 workdays.
+
+## 6.1. Creating a single CLI command
 
 - [X] [Create a single CLI command with Python](doc/shape01.md#create-a-single-cli-command-with-python)
   - [Create a virtual environment](doc/shape01.md#create-a-virtual-environment)
   - [Install dependencies](doc/shape01.md#install-dependencies)
   - [Create a Makefile](doc/shape01.md#create-a-makefile)
   - [Create a Main Application](doc/shape01.md#create-a-main-application)
+
+## 6.2. Creating test cases for each command
+
 - [X] [Create test cases for each command with Python](doc/shape02.md#create-test-cases-for-each-command-with-python)
   - [Test Driven Development](doc/shape02.md#test-driven-development)
   - [Install developer dependencies](doc/shape02.md#install-developer-dependencies)
   - [Create a test file](doc/shape02.md#create-a-test-file)
+
+## 6.3. Creating a Dockerfile and testing it locally
+
 - [X] [Create a Dockerfile and test it locally](doc/shape03.md#create-a-dockerfile-and-test-it-locally)
   - [Create a Dockerfile](doc/shape03.md#create-a-dockerfile)
   - [Generate a requirements file](doc/shape03.md#generate-a-requirements-file)
+
+## 6.4. Requiring status checks to pass before merging PR
+
 - [X] [Require status checks to pass before merging PR](doc/shape04.md#require-status-checks-to-pass-before-merging-pr)
   - [Status Checks](doc/shape04.md#status-checks)
   - [Continuous Integration](doc/shape04.md#continuous-integration)
+
+## 6.5. Building, testing, tagging and uploading our app image using CI
+
 - [X] [Build, test, tag and upload our app image using CI](doc/shape05.md##build-test-tag-and-upload-our-app-image-using-ci)
   - [Workflows](doc/shape05.md#workflows)
   - [Sequential job execution with dependency](doc/shape05.md#sequential-job-execution-with-dependency)
@@ -130,7 +182,8 @@ The project started on 17-Aug-2022 and is currently a work-in-progress and ahead
 > Note: All the `list-*` commands have been implemented and tested.
 
 ---
-# Building
+# 7. Building
+## 7.1. Building and testing a command and return its output
 
 This steps are repeatable, i.e. create and test a command.
 
@@ -141,6 +194,15 @@ This steps are repeatable, i.e. create and test a command.
   - [Build the command](doc/build01.md#build-the-command)
 
 ---
-# Limitation
+# 8. References
+## 8.1. Things to learn and research
 
-* The CD pipeline is currently blocked, because Coda.io API does not support POST requests for many of its resources. 
+In no particular order, my plan is to use the following resources to learn and research.
+
+| Title | Author | Publisher Date [Short Code]
+|---|---|---|
+| E-Book: Shape Up | Ryan Singer | Basecamp 2021
+| GitHub Repo: [Blasterai/codaio](https://github.com/Blasterai/codaio) | BlasterAI | 2022
+| E-Doc: [Click](https://click.palletsprojects.com) | Pallets | 2022
+| GitHub Repo: [dennislwm/archiveso](https://github.com/dennislwm/archiveso) | Dennis Lee | 2022
+
