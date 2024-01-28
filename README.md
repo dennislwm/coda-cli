@@ -35,6 +35,8 @@ This application is a Python CLI that interacts with Coda.io, which is a SaaS. T
   - [Building, testing, tagging and uploading our app image using CI](#building-testing-tagging-and-uploading-our-app-image-using-ci)
 - [Building](#building)
   - [Building and testing a command and return its output](#building-and-testing-a-command-and-return-its-output)
+- [Troubleshooting and FAQs](#troubleshooting-and-faqs)
+  - [Error *The following signatures couldn't be verified because the public key is not available*](#error-the-following-signatures-couldnt-be-verified-because-the-public-key-is-not-available)
 - [References](#references)
   - [Things to learn and research](#things-to-learn-and-research)
 
@@ -192,6 +194,39 @@ This steps are repeatable, i.e. create and test a command.
   - [Create test case](doc/build01.md#create-test-case)
   - [Configure build](doc/build01.md#configure-build)
   - [Build the command](doc/build01.md#build-the-command)
+
+---
+# 9. Troubleshooting and FAQs
+## 9.1. Error *The following signatures couldn't be verified because the public key is not available*
+
+Context Analysis:
+* Project: `coda-cli`
+* CI Workflow: `static-analysis-workflow`
+* CI Job: `static-analysis`
+* CI Step: Build image
+* CI Last Command: `cd app && make ci_test_build`
+* CI Output:
+
+```sh
+ => ERROR [2/7] RUN apt-get update                                         0.5s
+------
+ > [2/7] RUN apt-get update:
+#5 0.263 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+#5 0.270 Get:2 http://deb.debian.org/debian bookworm-updates InRelease [52.1 kB]
+#5 0.271 Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [48.0 kB]
+#5 0.301 Err:1 http://deb.debian.org/debian bookworm InRelease
+#5 0.301   The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 0E98404D386FA1D9 NO_PUBKEY 6ED0E7B82643E131 NO_PUBKEY F8D2585B8783D481
+```
+
+Problem Analysis:
+1. The `docker build` command fails on the second layer, i.e. `RUN apt-get update`, with error `The following signatures couldn't be verified because the public key is not available`.
+2. [StackOverflow](https://stackoverflow.com/questions/73699753/the-following-signatures-couldnt-be-verified-because-the-public-key-is-not-avai) top answer recommends upgrading the docker on the host.
+3. [CircleCI documentation](https://circleci.com/docs/building-docker-images/#docker-version) suggests possible docker versions:
+  * `default` - set to latest Docker 24.
+  * `docker23` - set to previous Docker 23.
+  * `20.10.24` - specific Docker version.
+4. The custom CI config `.circleci/config.yml` has an older docker version, i.e. `19.03.13`, used in both `static-analysis` and `deploy-image` jobs.
+5. The solution appears to be updating the docker version to `default`.
 
 ---
 # 8. References
