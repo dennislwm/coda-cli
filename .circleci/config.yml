@@ -17,7 +17,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 19.03.13
+          version: default
       - run:
           name: "Build image"
           command: cd app && make ci_test_build
@@ -33,7 +33,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 19.03.13
+          version: default
       - run:
           name: "Build image"
           command: cd app && make ci_build
