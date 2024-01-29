@@ -45,8 +45,8 @@ shell:
 shell_clean:
 	pipenv --rm
 
-test: 
-	PYTHONPATH=.:../ pytest
+test:
+	PYTHONPATH=. pytest
 
-test_verbose: 
-	PYTHONPATH=.:../ pytest -v -s
+test_verbose:
+	PYTHONPATH=. pytest -v -s
