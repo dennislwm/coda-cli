@@ -34,6 +34,18 @@ class Coda(object):
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|
   |                        E X T E R N A L   C L A S S   M E T H O D S                       |
   |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+  def get_column(self, strDocId, strTableId, strColumnId):
+    result = self.objCoda.get_column(strDocId, strTableId, strColumnId)
+    print ( result )
+
+  def get_doc(self, strDocId):
+    result = self.objCoda.get_doc(strDocId)
+    print ( result )
+
+  def get_section(self, strDocId, strSectionId):
+    result = self.objCoda.get_section(strDocId, strSectionId)
+    print ( result )
+
   def list_docs(self):
     result = self.objCoda.list_docs()
     print( result )
@@ -248,6 +260,45 @@ def list_columns(objCoda, doc, table):
 def list_rows(objCoda, doc, table):
   """ Returns the list of rows in a table """
   objCoda.list_rows(doc, table)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                            G E T _ C O L U M N   C O M M A N D                           |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.option('--table', required=True)
+@click.option('--column', required=True)
+@click.pass_obj
+#---------
+# Function 
+def get_column(objCoda, doc, table, column):
+  """ Returns a column """
+  objCoda.get_column(doc, table, column)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                               G E T _ D O C   C O M M A N D                              |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.pass_obj
+#---------
+# Function 
+def get_doc(objCoda, doc):
+  """ Returns a document """
+  objCoda.get_doc(doc)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                           G E T _ S E C T I O N   C O M M A N D                          |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.option('--section', required=True)
+@click.pass_obj
+#---------
+# Function 
+def get_section(objCoda, doc, section):
+  """ Returns a section """
+  objCoda.get_section(doc, section)
 
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
 |                                M A I N   P R O C E D U R E                               |

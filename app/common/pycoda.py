@@ -109,6 +109,36 @@ class Pycoda():
       return "{}"
     return self.json_items(list)
 
+  def get_doc(self, strDocId):
+    """ Returns a document """
+    assert(strDocId)
+    try:
+      val = self.coda.get_doc(strDocId)
+    except:
+      return "{}"
+    return json.dumps(val)
+
+  def get_section(self, strDocId, strSectionId):
+    """ Returns a section """
+    assert(strDocId)
+    assert(strSectionId)
+    try:
+      val = self.coda.get_section(strDocId, strSectionId)
+    except:
+      return "{}"
+    return json.dumps(val)
+
+  def get_column(self, strDocId, strTableId, strColumnId):
+    """ Returns a column """
+    assert(strDocId)
+    assert(strTableId)
+    assert(strColumnId)
+    try:
+      val = self.coda.get_column(strDocId, strTableId, strColumnId)
+    except:
+      return "{}"
+    return json.dumps(val)
+
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|
   |                                 C L A S S   M E T H O D S                                |
   |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
