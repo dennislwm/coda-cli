@@ -3,6 +3,7 @@
 hello.py
 Pipfile.lock
 requirements.txt
+.claude/
 
 #-----------------
 # github/gitignore
