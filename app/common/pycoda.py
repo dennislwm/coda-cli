@@ -139,6 +139,31 @@ class Pycoda():
       return "{}"
     return json.dumps(val)
 
+  def create_document(self, name):
+    """ Create a new document """
+    assert(name)
+    try:
+      result = self.coda.create_doc(name)
+      return {"id": result["id"], "name": result["name"]}
+    except Exception as e:
+      return {"error": str(e)}
+
+  def add_section(self, doc_id, section_name, section_type, content):
+    """ Add a section to a document """
+    assert(doc_id)
+    assert(section_name)
+    assert(section_type)
+    try:
+      # For canvas sections, add content as text
+      if section_type == "canvas":
+        result = self.coda.create_section(doc_id, section_name, content)
+      else:
+        # For other section types, create section without content for now
+        result = self.coda.create_section(doc_id, section_name)
+      return {"id": result["id"], "name": result["name"]}
+    except Exception as e:
+      return {"error": str(e)}
+
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|
   |                                 C L A S S   M E T H O D S                                |
   |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
