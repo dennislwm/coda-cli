@@ -15,6 +15,7 @@ class TemplateExporter:
         """
         self.pycoda = pycoda_client
 
+
     def extract_document_structure(self, doc_id):
         """Extract document structure from Coda API responses
 
@@ -30,14 +31,40 @@ class TemplateExporter:
         doc_json = self.pycoda.get_doc(doc_id)
         doc_data = json.loads(doc_json)
 
-        # Get sections/pages data
+        # Get sections/pages data - handle both JSON array and concatenated JSON format from Pycoda
         sections_json = self.pycoda.list_sections(doc_id)
-        sections_data = json.loads(sections_json)
+        
+        # Parse sections data - handle both formats
+        sections_data = []
+        if sections_json and sections_json != "{}":
+            try:
+                # Try parsing as JSON array first (from tests)
+                parsed_sections = json.loads(sections_json)
+                if isinstance(parsed_sections, list):
+                    sections_data = parsed_sections
+                else:
+                    sections_data = [parsed_sections]
+            except json.JSONDecodeError:
+                # Fall back to concatenated JSON objects parsing (from real API)
+                decoder = json.JSONDecoder()
+                idx = 0
+                while idx < len(sections_json.strip()):
+                    try:
+                        obj, end_idx = decoder.raw_decode(sections_json, idx)
+                        sections_data.append(obj)
+                        idx = end_idx
+                    except json.JSONDecodeError:
+                        # Skip any whitespace or invalid characters
+                        idx += 1
+                        if idx >= len(sections_json):
+                            break
+                        continue
 
-        # Combine into structure for template generation
+        # GREEN PHASE: Combine into structure for template generation including ownerName
         return {
             "id": doc_data["id"],
             "name": doc_data["name"],
+            "ownerName": doc_data["ownerName"],  # GREEN PHASE: Add ownerName from doc_data
             "sections": sections_data
         }
 
@@ -45,7 +72,7 @@ class TemplateExporter:
         """Detect template variables conservatively from document structure
 
         Args:
-            document_structure: Dict with document name and sections
+            document_structure: Dict with document name, ownerName, and sections
 
         Returns:
             Dict mapping variable names to detected values (max 7 variables)
@@ -54,7 +81,7 @@ class TemplateExporter:
 
         variables = {}
 
-        # Pattern 1: PROJECT_NAME from document names
+        # GREEN PHASE: Pattern 1: DOC_NAME from document names (renamed from PROJECT_NAME)
         doc_name = document_structure["name"]
 
         # Remove .coda extension first
@@ -63,12 +90,18 @@ class TemplateExporter:
         # Conservative patterns based on real data:
         # "TrackMySubs", "TrackMyScreen", "PokemonLeesarebest", etc.
         if clean_name and " " not in clean_name:  # Single word/compound word only
-            variables["PROJECT_NAME"] = clean_name
+            variables["DOC_NAME"] = clean_name  # GREEN PHASE: Changed from PROJECT_NAME
         elif clean_name == "Question Voting and Polling":  # Handle specific known multi-word
             # Conservative: only handle clear, specific cases
             pass  # Don't detect variables from complex multi-word names
 
-        # Conservative approach: Start with just PROJECT_NAME pattern
+        # GREEN PHASE: Pattern 2: OWNER_NAME from document ownerName field
+        if "ownerName" in document_structure and document_structure["ownerName"]:
+            owner_name = document_structure["ownerName"]
+            if owner_name.strip():  # Only if non-empty after stripping
+                variables["OWNER_NAME"] = owner_name
+
+        # Conservative approach: Start with DOC_NAME and OWNER_NAME patterns
         # Additional patterns (TEAM_NAME, STATUS, etc.) can be added in next iterations
 
         return variables

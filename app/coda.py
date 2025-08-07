@@ -4,7 +4,7 @@ import click
 #---------------
 # Custom library
 from common.pycoda import Pycoda
-#-----------------
+from common.template_exporter import TemplateExporter
 # Standard library
 import json
 import os
@@ -81,6 +81,29 @@ class Coda(object):
   def list_rows(self, strDocId, strTableId):
     result = self.objCoda.list_rows(strDocId, strTableId)
     print ( result )
+
+  def export_template(self, strDocId, strOutputFile=None):
+    """Export document as YAML template using TemplateExporter"""
+    # Create TemplateExporter instance
+    exporter = TemplateExporter(self.objCoda)
+    
+    # Extract document structure
+    doc_structure = exporter.extract_document_structure(strDocId)
+    
+    # Detect template variables
+    variables = exporter.detect_variables(doc_structure)
+    
+    # Generate YAML template
+    yaml_template = exporter.generate_yaml_template(doc_structure, variables)
+    
+    if strOutputFile:
+      # Write to file
+      with open(strOutputFile, "w") as f:
+        f.write(yaml_template)
+      print(f"Template exported to {strOutputFile}")
+    else:
+      # Print to stdout
+      print(yaml_template)
 
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|
   |                        I N T E R N A L   C L A S S   M E T H O D S                       |
@@ -299,6 +322,19 @@ def get_doc(objCoda, doc):
 def get_section(objCoda, doc, section):
   """ Returns a section """
   objCoda.get_section(doc, section)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                        E X P O R T _ T E M P L A T E   C O M M A N D                     |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.option('--output', '-o', help='Output file path (optional)')
+@click.pass_obj
+#---------
+# Function 
+def export_template(objCoda, doc, output):
+  """ Export document as YAML template """
+  objCoda.export_template(doc, output)
 
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
 |                                M A I N   P R O C E D U R E                               |
