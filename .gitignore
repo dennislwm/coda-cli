@@ -4,6 +4,7 @@ hello.py
 Pipfile.lock
 requirements.txt
 .claude/
+*.json
 
 #-----------------
 # github/gitignore
