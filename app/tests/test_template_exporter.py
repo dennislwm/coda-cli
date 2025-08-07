@@ -63,9 +63,33 @@ class TestTemplateExporter:
             }
         ]
 
+        # RED PHASE: list_tables returns array of table objects based on real API structure
+        tables_response = [
+            {
+                "id": "grid-DSbwC3HRoo",
+                "type": "table",
+                "name": "English Opened Pack", 
+                "parent": {
+                    "id": "canvas-OfvEDa_Lsg",
+                    "name": "English Pack"
+                }
+            },
+            {
+                "id": "grid-xyz123",
+                "type": "table",
+                "name": "Task Table",
+                "parent": {
+                    "id": "canvas-SuoSR_ZPcM",
+                    "name": "Track"
+                }
+            }
+        ]
+
         # Mock API responses based on real structure
         mock_pycoda.get_doc.return_value = json.dumps(doc_response)
         mock_pycoda.list_sections.return_value = json.dumps(sections_response)
+        # RED PHASE: Mock the list_tables API call (will fail because method doesn't exist yet)
+        mock_pycoda.list_tables.return_value = json.dumps(tables_response)
 
         # Act
         result = exporter.extract_document_structure("M-29VGfvl-")
@@ -81,9 +105,19 @@ class TestTemplateExporter:
         assert result["sections"][1]["name"] == "History"
         assert result["sections"][2]["name"] == "Summary"
 
+        # RED PHASE: Expect tables to be included in extracted structure (will fail)
+        assert "tables" in result
+        assert len(result["tables"]) == 2
+        assert result["tables"][0]["name"] == "English Opened Pack"
+        assert result["tables"][0]["parent"]["name"] == "English Pack"
+        assert result["tables"][1]["name"] == "Task Table"
+        assert result["tables"][1]["parent"]["name"] == "Track"
+
         # Verify correct API calls were made
         mock_pycoda.get_doc.assert_called_once_with("M-29VGfvl-")
         mock_pycoda.list_sections.assert_called_once_with("M-29VGfvl-")
+        # RED PHASE: Verify list_tables API call was made (will fail)
+        mock_pycoda.list_tables.assert_called_once_with("M-29VGfvl-")
 
     def test_conservative_variable_detection(self):
         """TemplateExporter should detect variables conservatively using real document patterns"""
@@ -153,48 +187,125 @@ class TestTemplateExporter:
         assert "HISTORY_NAME" not in variables_1
         assert "SUMMARY_NAME" not in variables_1
 
-    def test_generate_yaml_template(self):
-        """TemplateExporter should generate DocumentCreator-compatible YAML templates"""
+    def test_generate_yaml_template_nested_structure(self):
+        """RED PHASE: TemplateExporter should generate nested table structure under sections"""
         # Arrange
         mock_pycoda = Mock(spec=Pycoda)
         exporter = TemplateExporter(mock_pycoda)
 
-        # Real document structure from our previous tests
+        # Simple document structure with 2 sections and 2 tables
         document_structure = {
             "name": "TrackMySubs.coda",
-            "ownerName": "Dennis Lee",  # RED PHASE: Add ownerName
+            "ownerName": "Dennis Lee",
             "sections": [
                 {"name": "Track", "contentType": "canvas"},
-                {"name": "History", "contentType": "canvas"},
                 {"name": "Summary", "contentType": "canvas"}
+            ],
+            "tables": [
+                {"name": "Task Table", "parent": {"name": "Track"}},
+                {"name": "Summary Table", "parent": {"name": "Summary"}}
             ]
         }
 
-        # RED PHASE: Variables detected from our conservative detection (new names)
         detected_variables = {
-            "DOC_NAME": "TrackMySubs",  # Changed from PROJECT_NAME
-            "OWNER_NAME": "Dennis Lee"  # NEW: OWNER_NAME pattern
+            "DOC_NAME": "TrackMySubs"
         }
 
         # Act
         yaml_output = exporter.generate_yaml_template(document_structure, detected_variables)
 
-        # RED PHASE: Assert - Must be DocumentCreator compatible with new variable names (will fail)
+        # RED PHASE: Assert nested structure expectations (will fail)
         assert "document:" in yaml_output
-        assert "name: '{{DOC_NAME}}.coda'" in yaml_output  # Changed from {{PROJECT_NAME}} - will fail
+        assert "name: '{{DOC_NAME}}.coda'" in yaml_output
         assert "sections:" in yaml_output
-        assert "- name: Track" in yaml_output
-        assert "type: canvas" in yaml_output
 
-        # Critical: Verify round-trip compatibility
+        # Should have nested structure
+        assert "- name: Track" in yaml_output
+        assert "  type: canvas" in yaml_output
+        assert "  tables:" in yaml_output  # Tables nested under sections
+        assert "  - name: Task Table" in yaml_output
+
+        assert "- name: Summary" in yaml_output
+        assert "  tables:" in yaml_output  # Tables nested under sections
+        assert "  - name: Summary Table" in yaml_output
+
+        # Should NOT have flat structure
+        assert yaml_output.count("tables:") == 2  # Only under sections, not at document level
+        assert "parent:" not in yaml_output  # No parent fields in nested structure
+
+        # Verify parsed YAML structure
         import yaml
         parsed_template = yaml.safe_load(yaml_output)
-        assert "document" in parsed_template
-        assert "{{DOC_NAME}}" in parsed_template["document"]["name"]  # Changed from {{PROJECT_NAME}} - will fail
-        assert len(parsed_template["document"]["sections"]) == 3
+        
+        # Should have sections with nested tables
+        track_section = None
+        summary_section = None
+        
+        for section in parsed_template["document"]["sections"]:
+            if section["name"] == "Track":
+                track_section = section
+            elif section["name"] == "Summary":
+                summary_section = section
+        
+        # Verify Track section has nested table
+        assert track_section is not None
+        assert "tables" in track_section
+        assert len(track_section["tables"]) == 1
+        assert track_section["tables"][0]["name"] == "Task Table"
+        assert "parent" not in track_section["tables"][0]  # No parent field in nested structure
+        
+        # Verify Summary section has nested table
+        assert summary_section is not None
+        assert "tables" in summary_section
+        assert len(summary_section["tables"]) == 1
+        assert summary_section["tables"][0]["name"] == "Summary Table"
+        assert "parent" not in summary_section["tables"][0]  # No parent field in nested structure
 
-        # Verify sections maintain structure
-        track_section = parsed_template["document"]["sections"][0]
-        assert track_section["name"] == "Track"
-        assert track_section["type"] == "canvas"
+        # Should NOT have document-level tables array
+        assert "tables" not in parsed_template["document"]
+
+    def test_sections_without_tables_no_empty_arrays(self):
+        """Sections without tables should not have empty tables arrays"""
+        # Arrange
+        mock_pycoda = Mock(spec=Pycoda)
+        exporter = TemplateExporter(mock_pycoda)
+
+        # Document structure with some sections having tables, others not
+        document_structure = {
+            "name": "TestDoc.coda",
+            "sections": [
+                {"name": "Section A", "contentType": "canvas"},  # No tables
+                {"name": "Section B", "contentType": "canvas"},  # Has table
+                {"name": "Section C", "contentType": "canvas"}   # No tables
+            ],
+            "tables": [
+                {"name": "Table B", "parent": {"name": "Section B"}}
+            ]
+        }
+
+        detected_variables = {"DOC_NAME": "TestDoc"}
+
+        # Act
+        yaml_output = exporter.generate_yaml_template(document_structure, detected_variables)
+
+        # Assert - Verify parsed structure
+        import yaml
+        parsed = yaml.safe_load(yaml_output)
+        
+        sections = parsed["document"]["sections"]
+        section_a = next(s for s in sections if s["name"] == "Section A")
+        section_b = next(s for s in sections if s["name"] == "Section B")
+        section_c = next(s for s in sections if s["name"] == "Section C")
+        
+        # Section A should not have tables key at all
+        assert "tables" not in section_a
+        
+        # Section B should have tables array with one table
+        assert "tables" in section_b
+        assert len(section_b["tables"]) == 1
+        assert section_b["tables"][0]["name"] == "Table B"
+        
+        # Section C should not have tables key at all
+        assert "tables" not in section_c
+
 

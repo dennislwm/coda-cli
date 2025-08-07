@@ -23,7 +23,7 @@ class TemplateExporter:
             doc_id: Coda document ID
 
         Returns:
-            Dict containing document metadata and sections for template generation
+            Dict containing document metadata, sections, and tables for template generation
         """
         import json
 
@@ -60,12 +60,42 @@ class TemplateExporter:
                             break
                         continue
 
-        # GREEN PHASE: Combine into structure for template generation including ownerName
+        # GREEN PHASE: Get tables data - handle both JSON array and concatenated JSON format from Pycoda
+        tables_json = self.pycoda.list_tables(doc_id)
+        
+        # Parse tables data - handle both formats (similar to sections)
+        tables_data = []
+        if tables_json and tables_json != "{}":
+            try:
+                # Try parsing as JSON array first (from tests)
+                parsed_tables = json.loads(tables_json)
+                if isinstance(parsed_tables, list):
+                    tables_data = parsed_tables
+                else:
+                    tables_data = [parsed_tables]
+            except json.JSONDecodeError:
+                # Fall back to concatenated JSON objects parsing (from real API)
+                decoder = json.JSONDecoder()
+                idx = 0
+                while idx < len(tables_json.strip()):
+                    try:
+                        obj, end_idx = decoder.raw_decode(tables_json, idx)
+                        tables_data.append(obj)
+                        idx = end_idx
+                    except json.JSONDecodeError:
+                        # Skip any whitespace or invalid characters
+                        idx += 1
+                        if idx >= len(tables_json):
+                            break
+                        continue
+
+        # GREEN PHASE: Combine into structure for template generation including ownerName and tables
         return {
             "id": doc_data["id"],
             "name": doc_data["name"],
             "ownerName": doc_data["ownerName"],  # GREEN PHASE: Add ownerName from doc_data
-            "sections": sections_data
+            "sections": sections_data,
+            "tables": tables_data  # GREEN PHASE: Add tables data
         }
 
     def detect_variables(self, document_structure):
@@ -110,7 +140,7 @@ class TemplateExporter:
         """Generate YAML template with variable substitution for DocumentCreator
 
         Args:
-            document_structure: Dict with document name and sections
+            document_structure: Dict with document name, sections, and tables
             detected_variables: Dict mapping variable names to values
 
         Returns:
@@ -126,16 +156,34 @@ class TemplateExporter:
         for var_name, var_value in detected_variables.items():
             template_name = template_name.replace(var_value, f"{{{{{var_name}}}}}")
 
-        # Convert sections from Coda API format to DocumentCreator format
+        # GREEN PHASE: Group tables by parent section name for nested structure
+        tables_by_section = {}
+        if "tables" in document_structure and document_structure["tables"]:
+            for table in document_structure["tables"]:
+                parent_section_name = table["parent"]["name"]
+                if parent_section_name not in tables_by_section:
+                    tables_by_section[parent_section_name] = []
+                
+                # Create table entry without parent field (redundant in nested structure)
+                table_entry = {"name": table["name"]}
+                tables_by_section[parent_section_name].append(table_entry)
+
+        # Convert sections from Coda API format to nested DocumentCreator format
         template_sections = []
         for section in document_structure["sections"]:
             template_section = {
                 "name": section["name"],
                 "type": section["contentType"]  # Convert contentType to type for DocumentCreator
             }
+            
+            # GREEN PHASE: Add tables to section if this section has tables
+            section_name = section["name"]
+            if section_name in tables_by_section:
+                template_section["tables"] = tables_by_section[section_name]
+            
             template_sections.append(template_section)
 
-        # Create DocumentCreator-compatible structure
+        # Create DocumentCreator-compatible structure with nested tables
         template_structure = {
             "document": {
                 "name": template_name,
@@ -143,5 +191,8 @@ class TemplateExporter:
             }
         }
 
+        # GREEN PHASE: No longer add tables at document level - they're nested under sections
+
         # Generate YAML with proper formatting
         return yaml.dump(template_structure, default_flow_style=False, allow_unicode=True)
+
