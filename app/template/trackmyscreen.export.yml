@@ -1,0 +1,204 @@
+document:
+  name: '{{DOC_NAME}}.coda'
+  sections:
+  - name: Lego
+    tables:
+    - columns:
+      - display: true
+        format:
+          format: DD/MM/YYYY
+          isArray: false
+          type: date
+        name: Date
+        type: column
+      - format:
+          isArray: false
+          type: number
+          useThousandsSeparator: false
+        name: High Level
+        type: column
+      - calculated: true
+        format:
+          action: 'AddRow(Building,Date,Date+1,[High Level],[High Level]+1,Duration,Duration+1) '
+          disableIf: isblank([High Level])
+          isArray: false
+          label: Next Day
+          type: button
+        name: Copy to
+        type: column
+      - format:
+          isArray: false
+          precision: 4
+          type: duration
+        name: Duration
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: number
+          useThousandsSeparator: false
+        formula: '[High Level]/Duration'
+        name: Avg Level per Day
+        type: column
+      name: Building
+    type: canvas
+  - name: Brick
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: select
+        name: Type
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - format:
+          isArray: false
+          precision: 2
+          type: duration
+        name: Max Capacity
+        type: column
+      - format:
+          isArray: false
+          maxUnit: minutes
+          precision: 1
+          type: duration
+        name: Min Capacity
+        type: column
+      name: Floor
+    type: canvas
+  - name: Finance
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Service
+        type: column
+      - format:
+          format: ddd, MMM D, YYYY
+          isArray: false
+          type: date
+        name: Date
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Status
+        type: column
+      - calculated: true
+        format:
+          action: AddRow(IOU,Service,Service,Debtor,Debtor)
+          disableIf: Status="Active" OR IsBlank(Status)
+          isArray: false
+          label: Next IOU
+          type: button
+        name: Copy Service to
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Debtor
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Type
+        type: column
+      - format:
+          isArray: false
+          table:
+            browserLink: https://coda.io/d/_dMtqZ47komk#_tugrid-s80xKONi92
+            href: https://coda.io/apis/v1/docs/MtqZ47komk/tables/grid-s80xKONi92
+            id: grid-s80xKONi92
+            name: Store
+            tableType: table
+            type: table
+          type: lookup
+        name: Store
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 0
+          type: currency
+        name: Amount
+        type: column
+      name: IOU
+    type: canvas
+  - name: Food
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Location
+        type: column
+      name: Store
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Meal
+        type: column
+      - format:
+          isArray: false
+          table:
+            browserLink: https://coda.io/d/_dMtqZ47komk#_tugrid-s80xKONi92
+            href: https://coda.io/apis/v1/docs/MtqZ47komk/tables/grid-s80xKONi92
+            id: grid-s80xKONi92
+            name: Store
+            tableType: table
+            type: table
+          type: lookup
+        name: Store
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Type
+        type: column
+      - format:
+          icon: bug
+          isArray: false
+          maximum: 7
+          type: scale
+        name: Pyramid GI
+        type: column
+      - format:
+          format: ddd, MMM D, YYYY
+          isArray: false
+          type: date
+        name: Date
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Status
+        type: column
+      - calculated: true
+        format:
+          action: AddRow(Planner,Meal,Meal,Store,Store,Type,Type,[Pyramid GI],[Pyramid
+            GI])
+          disableIf: Status="Active" OR IsBlank(Status)
+          isArray: false
+          label: Next Meal
+          type: button
+        name: Copy Food to
+        type: column
+      name: Planner
+    type: canvas

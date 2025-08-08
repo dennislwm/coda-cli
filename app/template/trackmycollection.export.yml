@@ -1,0 +1,869 @@
+document:
+  name: '{{DOC_NAME}}'
+  sections:
+  - name: Seller via Custom
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: select
+        name: Category
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Mfg Set
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Grade
+        type: column
+      - format:
+          display: title
+          isArray: false
+          type: link
+        name: Watchlist
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Method
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        name: Price (USD)
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        name: Shipping (USD)
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 0
+          type: currency
+        name: 1Y Sales (USD)
+        type: column
+      - format:
+          display: title
+          isArray: false
+          type: link
+        name: Seller
+        type: column
+      - format:
+          format: DD/MM/YY
+          isArray: false
+          type: date
+        name: End Date
+        type: column
+      - format:
+          display: iconOnly
+          isArray: false
+          type: link
+        name: MM
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        name: Last (PSA)
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Status
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: 1-([Last (PSA)]/([Price (USD)]+[Shipping (USD)]))
+        name: Percent
+        type: column
+      - format:
+          isArray: false
+          precision: 0
+          type: number
+          useThousandsSeparator: false
+        name: Year
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Player
+        type: column
+      - format:
+          display: iconOnly
+          isArray: false
+          type: link
+        name: TCG
+        type: column
+      name: TCG Hobby
+    type: canvas
+  - name: Appreciation
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Order
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Platform
+        type: column
+      - format:
+          isArray: false
+          type: number
+          useThousandsSeparator: true
+        name: Value
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Description
+        type: column
+      - format:
+          isArray: true
+          type: select
+        name: Category
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Seller
+        type: column
+      name: Table
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Order
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Platform
+        type: column
+      - format:
+          isArray: false
+          type: number
+          useThousandsSeparator: true
+        name: Value
+        type: column
+      name: Line Chart
+    type: canvas
+  - name: Allocation
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Set
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: Kelly+0.0931
+        name: Total 100%
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: '[Total 100%]/sum([Total 100%])'
+        name: Expected
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: Net/sum(Net)
+        name: Actual
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: Expected-Actual
+        name: Diff
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: Expense-Sale
+        name: Net
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          type: text
+        formula: lookup([Japanese Kelly],Name,Set).[English Set]
+        name: English Set
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: sum(lookup(Ledger,Set,Set).Expense)
+        name: Expense
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: sum(lookup(Ledger,Set,Set).Sale)
+        name: Sale
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: lookup([Japanese Kelly],Name,Set).[Kelly %]
+        name: Kelly
+        type: column
+      name: Japanese Allocation
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Set
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: percent
+          useThousandsSeparator: true
+        formula: '[Kelly %]+0.0236'
+        name: Total 100%
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: '[Total 100%]/sum([Total 100%])'
+        name: Expected
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: Net/sum(Net )
+        name: Actual
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: Expected-Actual
+        name: Diff
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: sum(lookup(Ledger,Set,Set).Sale)
+        name: Sale
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: Expense-Sale
+        name: Net
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Chase Hit
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: sum(lookup(Ledger,Set,Set).Expense)
+        name: Expense
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        formula: lookup([English Kelly],Name,Set).Reward
+        name: Reward
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: percent
+          useThousandsSeparator: true
+        formula: lookup([English Kelly],Name,Set).[Kelly %]
+        name: Kelly %
+        type: column
+      name: English Allocation
+    type: canvas
+  - name: Ledger
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: select
+        name: Set
+        type: column
+      - format:
+          format: DD/MM/YY
+          isArray: false
+          type: date
+        name: Date
+        type: column
+      - format:
+          isArray: false
+          precision: 2
+          type: number
+          useThousandsSeparator: true
+        name: Expense
+        type: column
+      - format:
+          isArray: false
+          precision: 2
+          type: number
+          useThousandsSeparator: true
+        name: Sale
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Platform
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Type
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Comment
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Player
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Order
+        type: column
+      name: Ledger
+    type: canvas
+  - name: Auction
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Seller
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 1
+          type: currency
+        name: Price
+        type: column
+      - format:
+          isArray: false
+          precision: 0
+          type: number
+          useThousandsSeparator: true
+        name: L cm
+        type: column
+      - format:
+          isArray: false
+          precision: 0
+          type: number
+          useThousandsSeparator: true
+        name: W cm
+        type: column
+      - format:
+          isArray: false
+          precision: 0
+          type: number
+          useThousandsSeparator: true
+        name: H cm
+        type: column
+      - format:
+          isArray: false
+          precision: 1
+          type: number
+          useThousandsSeparator: true
+        name: Wt kg
+        type: column
+      - format:
+          display: iconOnly
+          isArray: false
+          type: link
+        name: Comp1
+        type: column
+      - format:
+          display: iconOnly
+          isArray: false
+          type: link
+        name: Comp2
+        type: column
+      - format:
+          display: iconOnly
+          isArray: false
+          type: link
+        name: Comp3
+        type: column
+      - format:
+          isArray: false
+          precision: 0
+          type: number
+          useThousandsSeparator: true
+        name: L1 cm
+        type: column
+      - format:
+          isArray: false
+          precision: 0
+          type: number
+          useThousandsSeparator: true
+        name: W1 cm
+        type: column
+      - format:
+          isArray: false
+          precision: 0
+          type: number
+          useThousandsSeparator: true
+        name: H1 cm
+        type: column
+      - format:
+          display: iconOnly
+          isArray: false
+          type: link
+        name: Preview
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 1
+          type: currency
+        name: High
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Set
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Type
+        type: column
+      - format:
+          dateFormat: DD/MM/YY
+          isArray: false
+          timeFormat: HH:mm
+          type: dateTime
+        name: End Date
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Player
+        type: column
+      name: Platform
+    type: canvas
+  - name: Kelly %
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: percent
+          useThousandsSeparator: true
+        name: Win %
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        formula: '[Wgt Value]/[Poke Card Hi]'
+        name: Reward
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: percent
+          useThousandsSeparator: true
+        formula: 1-[Win %]
+        name: Loss %
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: '[Win %]-([Loss %]/Reward)'
+        name: Kelly %
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Poke Card Hi
+        type: column
+      - format:
+          isArray: false
+          precision: 2
+          type: number
+          useThousandsSeparator: true
+        name: Pokedata Val
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Chase50
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Top1
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Top2-4
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Top5-9
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 0
+          type: number
+          useThousandsSeparator: true
+        formula: 0.9*Top1+0.6*([Top2-4])+0.3*([Top5-9])+[Pokedata Val]
+        name: Wgt Value
+        type: column
+      name: English Kelly
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: English Set
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: percent
+          useThousandsSeparator: true
+        formula: lookup([English Kelly],Name,[English Set]).[Win %]
+        name: Win %
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: percent
+          useThousandsSeparator: true
+        formula: 1-[Win %]
+        name: Loss %
+        type: column
+      - format:
+          isArray: false
+          precision: 0
+          type: number
+          useThousandsSeparator: true
+        name: Poke Card Hi
+        type: column
+      - format:
+          isArray: false
+          precision: 2
+          type: number
+          useThousandsSeparator: true
+        name: Poke Value
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        formula: '[Poke Value]/[Poke Card Hi]'
+        name: Reward
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: percent
+          useThousandsSeparator: true
+        formula: '[Win %]-([Loss %]/Reward)'
+        name: Kelly %
+        type: column
+      - format:
+          isArray: false
+          precision: 0
+          type: number
+          useThousandsSeparator: true
+        name: Chase30
+        type: column
+      name: Japanese Kelly
+    type: canvas
+  - name: Pull Rate %
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: SAR
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: AR
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: SAR/Packs
+        name: PR SAR %
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Packs
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: (SAR+AR+SR)/Packs
+        name: PR Total %
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: SR
+        type: column
+      name: Japanese SV Set
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: SIR
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: SIR/Packs
+        name: PR SIR %
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: (SIR+IR+ HR)/Packs
+        name: PR Total %
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: IR
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: HR
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Packs
+        type: column
+      name: English SV Set
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: SR
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: SR/Packs
+        name: PR SR %
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: true
+        formula: (SR+UR)/Packs
+        name: PR Total %
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: UR
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Packs
+        type: column
+      name: English SWSH Set
+    type: canvas

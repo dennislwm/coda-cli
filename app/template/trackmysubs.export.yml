@@ -1,0 +1,167 @@
+document:
+  name: '{{DOC_NAME}}.coda'
+  sections:
+  - name: Track
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Service
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Label
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Billing Term
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        name: Pricing
+        type: column
+      - format:
+          format: DD/MM/YYYY
+          isArray: false
+          type: date
+        name: End Date
+        type: column
+      - calculated: true
+        format:
+          action: 'Notify(List([Dennis Lee]), Concatenate("Action Needed: Renewal
+            of ",Service," ",[End Date].ToText()))'
+          disableIf: Status!="Active" OR ([Days Till Renewal]>7 AND [Billing Term]="Month")
+            OR ([Days Till Renewal]>30 AND [Billing Term]="Annual")
+          isArray: false
+          label: Send Alert
+          type: button
+        name: Reminder
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Status
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 4
+          type: duration
+        formula: '[End Date]-Today()'
+        name: Days Till Renewal
+        type: column
+      - calculated: true
+        format:
+          action: AddRow([Subscription tracking], Service,Service,Pricing,Pricing
+            ,[Billing Term],[Billing Term],Label,Label,[End Date], if([Billing Term]="Month",RelativeDate([End
+            Date],1 ),RelativeDate([End Date],12 )))
+          disableIf: Status!="Paid" AND Status!="Cancelled"
+          isArray: false
+          label: Next Period
+          type: button
+        name: Copy Paid Service to
+        type: column
+      name: Subscription tracking
+    type: canvas
+  - name: History
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Service
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Label
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Billing Term
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        name: Pricing
+        type: column
+      - format:
+          format: DD/MM/YYYY
+          isArray: false
+          type: date
+        name: End Date
+        type: column
+      name: Billing History (Paid)
+    type: canvas
+  - name: Summary
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Service
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Label
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Billing Term
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        name: Pricing
+        type: column
+      - format:
+          format: DD/MM/YYYY
+          isArray: false
+          type: date
+        name: End Date
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 4
+          type: duration
+        formula: '[End Date]-Today()'
+        name: Days Till Renewal
+        type: column
+      - calculated: true
+        format:
+          action: 'Notify(List([Dennis Lee]), Concatenate("Action Needed: Renewal
+            of ",Service," ",[End Date].ToText()))'
+          disableIf: Status!="Active" OR ([Days Till Renewal]>7 AND [Billing Term]="Month")
+            OR ([Days Till Renewal]>30 AND [Billing Term]="Annual")
+          isArray: false
+          label: Send Alert
+          type: button
+        name: Reminder
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Status
+        type: column
+      name: How much do you spend on online services?
+    type: canvas

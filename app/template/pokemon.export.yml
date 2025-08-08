@@ -1,0 +1,529 @@
+document:
+  name: '{{DOC_NAME}}'
+  sections:
+  - name: Summary
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        formula: countif(lookup([English Owned Hit],Name,Name).Rarity,currentvalue=[Special
+          Illustration Rare])
+        name: SIR
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        formula: sum(lookup([English Opened Pack],Name,Name).Quantity)
+        name: '# Packs'
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: percent
+          useThousandsSeparator: true
+        formula: SIR/[# Packs]
+        name: PR SIR %
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        formula: countif(lookup([English Owned Hit],Name,Name).Rarity,currentValue!=[Special
+          Illustration Rare])
+        name: Other
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: percent
+          useThousandsSeparator: true
+        formula: (SIR+Other)/[# Packs]
+        name: PR Total %
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: sum(lookup([English Opened Pack],Name,Name).[Total Cost])
+        name: Est Cost
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: '[Est Cost]/(SIR+Other)'
+        name: per Hit
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: max(lookup([English Owned Hit],Name,Name).[Price $SGD])
+        name: High
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: min(lookup([English Owned Hit],Name,Name).[Price $SGD])
+        name: Low
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: sum(lookup([English Owned Hit],Name,Name).[Price $SGD])
+        name: Total Value
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: '[Avg Value]-[per Hit]'
+        name: Avg Diff
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: '[Total Value]/(SIR+Other)'
+        name: Avg Value
+        type: column
+      name: English DO NOT CHANGE
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        formula: countif(lookup([Japanese Owned Hit],Name,Name).Rarity,currentvalue=[Special
+          Art Rare])
+        name: SIR
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        formula: sum(lookup([Japanese Opened Pack],Name,Name).Quantity)
+        name: '# Packs'
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: percent
+          useThousandsSeparator: true
+        formula: SIR/[# Packs]
+        name: PR SIR %
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        formula: countif(lookup([Japanese Owned Hit],Name,Name).Rarity,currentValue!=[Special
+          Art Rare])
+        name: Other
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 22
+          type: percent
+          useThousandsSeparator: true
+        formula: (SIR+Other)/[# Packs]
+        name: PR Total %
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: sum(lookup([Japanese Opened Pack],Name,Name).[Total Cost])
+        name: Est Cost
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: '[Est Cost]/(SIR+Other)'
+        name: per Hit
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: max(lookup([Japanese Owned Hit],Name,Name).[Price $SGD])
+        name: High
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: min(lookup([Japanese Owned Hit],Name,Name).[Price $SGD])
+        name: Low
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: sum(lookup([Japanese Owned Hit],Name,Name).[Price $SGD])
+        name: Total Value
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: '[Avg Value]-[per Hit]'
+        name: Avg Diff
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: '[Total Value]/(SIR+Other)'
+        name: Avg Value
+        type: column
+      name: Japanese DO NOT CHANGE
+    type: canvas
+  - name: English Hit
+    tables:
+    - columns:
+      - display: true
+        format:
+          format: DD/MM/YY
+          isArray: false
+          type: date
+        name: Date Owned
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Owner
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Name
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Player
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: 'Card #'
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Rarity
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        name: Price $SGD
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Status
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Comment
+        type: column
+      name: English Owned Hit
+    type: canvas
+  - name: English Pack
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: select
+        name: Name
+        type: column
+      - format:
+          format: DD/MM/YY
+          isArray: false
+          type: date
+        name: Date Opened
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Owner
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Quantity
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: '# Hits'
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        name: per Pack
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: Quantity*[per Pack]
+        name: Total Cost
+        type: column
+      - calculated: true
+        format:
+          dateFormat: DD/MM/YY
+          isArray: false
+          timeFormat: h:mm A
+          type: dateTime
+        formula: thisRow.Created()
+        name: Date Created
+        type: column
+      name: English Opened Pack
+    type: canvas
+  - name: Japanese Hit
+    tables:
+    - columns:
+      - display: true
+        format:
+          format: DD/MM/YY
+          isArray: false
+          type: date
+        name: Date Owned
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Owner
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Name
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Player
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: 'Card #'
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Rarity
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        name: Price $SGD
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Status
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Comment
+        type: column
+      name: Japanese Owned Hit
+    type: canvas
+  - name: Japanese Pack
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: select
+        name: Name
+        type: column
+      - format:
+          format: DD/MM/YY
+          isArray: false
+          type: date
+        name: Date Opened
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Owner
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Quantity
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: '# Hits'
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        name: per Pack
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: Quantity*[per Pack]
+        name: Total Cost
+        type: column
+      name: Japanese Opened Pack
+    type: canvas
+  - name: Seby App
+    tables:
+    - columns:
+      - display: true
+        format:
+          format: DD/MM/YY
+          isArray: false
+          type: date
+        name: Date Order
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Person
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Game
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Item
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Price
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Status
+        type: column
+      - format:
+          isArray: false
+          precision: 22
+          type: number
+          useThousandsSeparator: true
+        name: Amt
+        type: column
+      name: Ledger
+    type: canvas

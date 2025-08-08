@@ -1,0 +1,559 @@
+document:
+  name: '{{DOC_NAME}}.coda'
+  sections:
+  - name: Watchlist
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Exchange
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Ticker
+        type: column
+      - format:
+          format: DD/MM/YYYY
+          isArray: false
+          type: date
+        name: Date Start
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          type: duration
+        formula: Today() - [Date Start]
+        name: Days
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 0
+          type: currency
+        name: AUM (mln)
+        type: column
+      - format:
+          isArray: false
+          precision: 2
+          type: percent
+          useThousandsSeparator: false
+        name: Yield
+        type: column
+      - format:
+          isArray: false
+          precision: 2
+          type: percent
+          useThousandsSeparator: false
+        name: Expense
+        type: column
+      - format:
+          isArray: false
+          precision: 1
+          type: number
+          useThousandsSeparator: false
+        name: Avg Vol (mln)
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: URL
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        name: Last Price
+        type: column
+      - format:
+          format: DD/MM/YYYY
+          isArray: false
+          type: date
+        name: Update Date
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Currency
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Benchmark
+        type: column
+      - format:
+          displayType: check
+          isArray: false
+          type: checkbox
+        name: ETF
+        type: column
+      - calculated: true
+        format:
+          action: AddRow(History, Exchange, Exchange, Ticker, Ticker, Currency, Currency,
+            Price, [Last Price])
+          isArray: false
+          label: History
+          type: button
+        name: Send to
+        type: column
+      - calculated: true
+        format:
+          action: AddOrModifyRows(Active, Name=Name, Name, Name, Ticker, Ticker, [Last
+            Price], [Last Price], Currency, Currency)
+          isArray: false
+          label: Active
+          type: button
+        name: Update
+        type: column
+      name: Stock/ETF
+    type: canvas
+  - name: Portfolio
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Ticker
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Currency
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: accounting
+          isArray: false
+          precision: 2
+          type: currency
+        formula: sum(History.Filter(Ticker=Ticker).Cost)/[Total Units]
+        name: Avg Price
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: accounting
+          isArray: false
+          precision: 2
+          type: currency
+        formula: if([Total Units]>0,[Total Units]*[Last Price],"")
+        name: Total Value
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 1
+          type: percent
+          useThousandsSeparator: false
+        formula: if([Cost/(Gain)]>0,[Total Value]/[Cost/(Gain)]-1,"")
+        name: Up/(Down)
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Last Price
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 0
+          type: number
+          useThousandsSeparator: true
+        formula: sum(History.Filter(Ticker=Ticker).Units)
+        name: Total Units
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: accounting
+          isArray: false
+          precision: 2
+          type: currency
+        formula: sum(History.Filter(Ticker=Ticker).Cost)
+        name: Cost/(Gain)
+        type: column
+      name: Active
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Ticker
+        type: column
+      - format:
+          format: DD/MM/YYYY
+          isArray: false
+          type: date
+        name: Purchase Date
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Currency
+        type: column
+      - format:
+          currencyCode: USD
+          format: accounting
+          isArray: false
+          precision: 2
+          type: currency
+        name: Price
+        type: column
+      - format:
+          isArray: false
+          precision: 0
+          type: number
+          useThousandsSeparator: true
+        name: Units
+        type: column
+      - format:
+          currencyCode: USD
+          format: accounting
+          isArray: false
+          precision: 2
+          type: currency
+        name: Fees
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: accounting
+          isArray: false
+          precision: 2
+          type: currency
+        formula: if(IsBlank(Price||IsBlank(Units)),"",Price*Units)+Fees
+        name: Cost
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Exchange
+        type: column
+      name: History
+    type: canvas
+  - name: Crypto
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: select
+        name: Asset
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        formula: if(Cost<0 OR [Total Units]=0,"",Cost/[Total Units])
+        name: Avg Price
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 0
+          type: currency
+        formula: sum(Trade.Filter(Exchange=Exchange AND Crypto=Asset AND Type="Buy").Cost)-sum(Trade.Filter(Exchange=Exchange
+          AND Crypto=Asset AND Type="Sell").Cost)
+        name: Cost
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 4
+          type: number
+          useThousandsSeparator: true
+        formula: sum(Trade.Filter(Exchange=Exchange AND Crypto=Asset AND Type="Buy").Units)-sum(Trade.Filter(Exchange=Exchange
+          AND Crypto=Asset AND Type="Sell").Units)
+        name: Total Units
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 3
+          type: currency
+        name: Current Price
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 2
+          type: percent
+          useThousandsSeparator: false
+        formula: if(Cost<=0 OR [Total Units]=0,"",[Current Price]/[Avg Price]-1)
+        name: Drawdown
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Exchange
+        type: column
+      - calculated: true
+        format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 0
+          type: currency
+        formula: if((Cost<0 OR [Total Units]=0) AND IsBlank([Current Price]),"",[Total
+          Units]*[Current Price])
+        name: Market Value
+        type: column
+      name: Drawdown
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: select
+        name: Asset
+        type: column
+      - format:
+          format: DD/MM/YYYY
+          isArray: false
+          type: date
+        name: Date
+        type: column
+      - format:
+          isArray: false
+          type: number
+          useThousandsSeparator: true
+        name: Units
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Exchange
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Type
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: To/From
+        type: column
+      - calculated: true
+        format:
+          action: AddRow(Transfer,Exchange,Exchange,Type,Type,[To/From],[To/From],Asset,Asset,Cost,Cost
+            )
+          isArray: false
+          label: Next Period
+          type: button
+        name: Copy To
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 0
+          type: currency
+        name: Cost
+        type: column
+      name: Transfer
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: select
+        name: Type
+        type: column
+      - format:
+          format: DD/MM/YYYY
+          isArray: false
+          type: date
+        name: Date
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Crypto
+        type: column
+      - format:
+          currencyCode: USD
+          format: currency
+          isArray: false
+          precision: 2
+          type: currency
+        name: Cost
+        type: column
+      - format:
+          isArray: false
+          type: number
+          useThousandsSeparator: false
+        name: Units
+        type: column
+      - calculated: true
+        format:
+          isArray: false
+          precision: 4
+          type: number
+          useThousandsSeparator: true
+        formula: if(IsNotBlank(Units),Cost/Units,'')
+        name: Price per Unit
+        type: column
+      - calculated: true
+        format:
+          action: AddRow(thisTable,Exchange,Exchange,Type,Type,Cost,Cost,Crypto,Crypto)
+          isArray: false
+          label: Next Period
+          type: button
+        name: Copy To
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Exchange
+        type: column
+      - calculated: true
+        format:
+          action: Notify(List([Dennis Lee]), Concatenate(if(Type="Buy","Bought","Sold"),"
+            S",Cost," worth of ",Crypto," at $",[Price per Unit]))
+          isArray: false
+          label: Notify DL
+          type: button
+        name: Share To
+        type: column
+      name: Trade
+    type: canvas
+  - name: Signup
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Signup Link
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Domain Age
+        type: column
+      - format:
+          isArray: false
+          type: select
+        name: Country
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Description
+        type: column
+      - format:
+          format: DD/MM/YYYY
+          isArray: false
+          type: date
+        name: Link Expiry
+        type: column
+      - format:
+          displayType: check
+          isArray: false
+          type: checkbox
+        name: Signup
+        type: column
+      - calculated: true
+        format:
+          action: AddRow(Plan,Tier, Tier, Name, Name, [Login Link], [Signup Link],  Expiry,
+            [Link Expiry])
+          disableIf: Signup=false OR Plan.Filter(Name=Name).Name=Name
+          isArray: false
+          label: Tier
+          type: button
+        name: Send to
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Code
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Tier
+        type: column
+      name: Source
+    type: canvas
+  - name: Tier
+    tables:
+    - columns:
+      - display: true
+        format:
+          isArray: false
+          type: text
+        name: Login Link
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: E-Mail
+        type: column
+      - format:
+          format: DD/MM/YYYY
+          isArray: false
+          type: date
+        name: Expiry
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Name
+        type: column
+      - format:
+          format: DD/MM/YYYY
+          isArray: false
+          type: date
+        name: Date
+        type: column
+      - format:
+          isArray: false
+          precision: 1
+          type: duration
+        name: Duration
+        type: column
+      - format:
+          isArray: false
+          type: text
+        name: Tier
+        type: column
+      - format:
+          isArray: true
+          type: select
+        name: Hashtag
+        type: column
+      - format:
+          displayType: check
+          isArray: false
+          type: checkbox
+        name: Forever
+        type: column
+      name: Plan
+    type: canvas
