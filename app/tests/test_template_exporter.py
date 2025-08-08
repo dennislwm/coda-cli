@@ -224,3 +224,134 @@ class TestTemplateExporter:
         assert "{{DOC_NAME}}" not in substituted_yaml
         assert "{{OWNER_NAME}}" not in substituted_yaml
         assert "MyCustomProject" in substituted_yaml
+
+    def test_create_document_from_yaml_template(self, mock_pycoda, sample_document_data):
+        """TDD RED PHASE: Test document creation from YAML template
+        
+        This test validates the core import functionality - taking a YAML template and creating 
+        an actual Coda document from it. This is the foundation of template reusability. 
+        Users need to be able to take exported templates, customize them with variables, 
+        and generate new documents. This provides immediate business value by enabling 
+        document naming and basic template workflow.
+        
+        RED PHASE: This will fail because create_document_from_template method doesn't exist yet.
+        """
+        # Arrange - Create YAML template with variables
+        yaml_template = """
+document:
+  name: '{{DOC_NAME}}'
+  sections:
+  - name: Main Section
+    type: canvas
+    tables:
+    - name: Sample Table
+      columns:
+      - name: Text Field
+        type: column
+        format:
+          type: text
+"""
+        
+        # Define variables for substitution
+        variables = {
+            "DOC_NAME": "My Imported Project"
+        }
+        
+        # Mock successful document creation
+        mock_pycoda.create_document.return_value = {
+            "id": "new-doc-123",
+            "name": "My Imported Project"
+        }
+        
+        # Act - Import template and create document (RED PHASE: This will fail)
+        from common.template_importer import TemplateImporter
+        importer = TemplateImporter()
+        
+        # This method doesn't exist yet - will cause AttributeError
+        result = importer.create_document_from_template(yaml_template, variables, mock_pycoda)
+        
+        # Assert - Verify document creation workflow
+        # Document was created with correct name
+        assert result["id"] == "new-doc-123"
+        assert result["name"] == "My Imported Project"
+        
+        # Verify Pycoda.create_document was called with substituted name
+        mock_pycoda.create_document.assert_called_once_with("My Imported Project")
+        
+        # Verify no template variables remain in the final result
+        assert "{{DOC_NAME}}" not in result["name"]
+
+    def test_import_template_error_handling(self, mock_pycoda):
+        """TDD TEST: Test robust error handling in import process
+        
+        This test ensures robust error handling in the import process, which is critical for 
+        user experience. When users provide invalid YAML templates, missing variables, or 
+        when API calls fail, the system should provide clear, actionable error messages 
+        rather than cryptic exceptions. This builds user trust and makes the import feature 
+        production-ready. Error handling is especially important for import functionality 
+        since it involves external API calls that can fail for various reasons.
+        """
+        from common.template_importer import TemplateImporter
+        
+        importer = TemplateImporter()
+        
+        # Test Scenario 1: Invalid YAML handling
+        invalid_yaml = "invalid: yaml: content: ["  # Malformed YAML
+        variables = {"DOC_NAME": "Test Project"}
+        
+        with pytest.raises(ValueError) as exc_info:
+            importer.create_document_from_template(invalid_yaml, variables, mock_pycoda)
+        
+        # Verify error message is helpful for invalid YAML
+        assert "Failed to create document from template" in str(exc_info.value)
+        assert "Invalid YAML" in str(exc_info.value)
+        
+        # Test Scenario 2: Missing template variables (unsubstituted variables remain)
+        yaml_with_missing_var = """
+document:
+  name: '{{MISSING_VAR}} Project'
+  sections: []
+"""
+        empty_variables = {}  # No variables provided
+        
+        # This should still work but leave the variable unsubstituted
+        # The create_document call should handle the literal "{{MISSING_VAR}} Project" name
+        mock_pycoda.create_document.return_value = {
+            "id": "doc-with-unsubstituted-var",
+            "name": "{{MISSING_VAR}} Project"
+        }
+        
+        result = importer.create_document_from_template(yaml_with_missing_var, empty_variables, mock_pycoda)
+        
+        # Verify unsubstituted variables are preserved (this is acceptable behavior)
+        assert "{{MISSING_VAR}}" in result["name"]
+        
+        # Test Scenario 3: API failure handling - Document creation error
+        valid_yaml = """
+document:
+  name: 'Test Project'
+  sections: []
+"""
+        
+        # Mock API error response
+        mock_pycoda.create_document.return_value = {"error": "API rate limit exceeded"}
+        
+        with pytest.raises(ValueError) as exc_info:
+            importer.create_document_from_template(valid_yaml, {}, mock_pycoda)
+        
+        # Verify API error is properly handled and propagated
+        assert "Document creation failed" in str(exc_info.value)
+        assert "API rate limit exceeded" in str(exc_info.value)
+        
+        # Test Scenario 4: Missing document key in template
+        yaml_missing_doc_key = """
+sections:
+- name: Orphaned Section
+"""
+        
+        with pytest.raises(ValueError) as exc_info:
+            importer.create_document_from_template(yaml_missing_doc_key, {}, mock_pycoda)
+        
+        # Verify missing document key error
+        assert "Failed to create document from template" in str(exc_info.value)
+        assert "missing 'document' key" in str(exc_info.value)

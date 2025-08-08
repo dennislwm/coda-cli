@@ -28,3 +28,39 @@ class TemplateImporter:
             return str(variables.get(var_name, match.group(0)))
         
         return self._var_pattern.sub(replacer, yaml_content)
+    
+    def create_document_from_template(self, yaml_content, variables, pycoda_client):
+        """Create a new Coda document from YAML template with variable substitution
+        
+        Args:
+            yaml_content: String containing YAML template
+            variables: Dict mapping variable names to replacement values
+            pycoda_client: Pycoda instance for API calls
+            
+        Returns:
+            Dict containing document creation result with id and name
+            
+        Raises:
+            ValueError: If template is invalid or document creation fails
+        """
+        try:
+            # Step 1: Substitute variables in template
+            substituted_yaml = self.substitute_variables(yaml_content, variables)
+            
+            # Step 2: Parse the substituted YAML template
+            template_structure = self.parse_yaml_template(substituted_yaml)
+            
+            # Step 3: Extract document name from parsed structure
+            document_name = template_structure["document"]["name"]
+            
+            # Step 4: Create the document using Pycoda client
+            result = pycoda_client.create_document(document_name)
+            
+            # Step 5: Check for errors in document creation
+            if "error" in result:
+                raise ValueError(f"Document creation failed: {result['error']}")
+                
+            return result
+            
+        except Exception as e:
+            raise ValueError(f"Failed to create document from template: {str(e)}") from e

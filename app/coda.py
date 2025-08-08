@@ -105,6 +105,54 @@ class Coda(object):
       # Print to stdout
       print(yaml_template)
 
+  def import_template(self, strTemplateFile, strVariables=None):
+    """Import YAML template and create new document using TemplateImporter"""
+    from common.template_importer import TemplateImporter
+    import os
+    
+    try:
+      # Check if template file exists
+      if not os.path.exists(strTemplateFile):
+        raise click.ClickException(f"Template file '{strTemplateFile}' not found")
+      
+      # Read YAML template from file
+      with open(strTemplateFile, "r") as f:
+        yaml_content = f.read()
+      
+      # Parse variables from command line format: "VAR1=value1 VAR2=value2"
+      # Handle quoted values with spaces: 'VAR1=My Project Name VAR2=value2'
+      variables = {}
+      if strVariables:
+        import shlex
+        # Use shlex to handle quoted arguments properly
+        try:
+          # Split respecting quotes: "DOC_NAME=My CLI Test Project" becomes one argument
+          args = shlex.split(strVariables)
+          for var_pair in args:
+            if "=" in var_pair:
+              key, value = var_pair.split("=", 1)
+              variables[key] = value
+        except Exception:
+          # Fallback to simple split if shlex fails
+          for var_pair in strVariables.split():
+            if "=" in var_pair:
+              key, value = var_pair.split("=", 1)
+              variables[key] = value
+      
+      # Create TemplateImporter instance and import template
+      importer = TemplateImporter()
+      result = importer.create_document_from_template(yaml_content, variables, self.objCoda)
+      
+      # Display success message
+      print(f"Document created successfully: ID={result['id']}, Name='{result['name']}'")
+      
+    except click.ClickException:
+      # Re-raise Click exceptions (they handle exit codes properly)
+      raise
+    except Exception as e:
+      # Convert other exceptions to Click exceptions with proper exit codes
+      raise click.ClickException(f"Import failed: {str(e)}")
+
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|
   |                        I N T E R N A L   C L A S S   M E T H O D S                       |
   |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
@@ -335,6 +383,19 @@ def get_section(objCoda, doc, section):
 def export_template(objCoda, doc, output):
   """ Export document as YAML template """
   objCoda.export_template(doc, output)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                        I M P O R T _ T E M P L A T E   C O M M A N D                     |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--file', required=True, help='YAML template file path')
+@click.option('--variables', help='Template variables in format: VAR1=value1 VAR2=value2')
+@click.pass_obj
+#---------
+# Function 
+def import_template(objCoda, file, variables):
+  """ Import YAML template and create new document """
+  objCoda.import_template(file, variables)
 
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
 |                                M A I N   P R O C E D U R E                               |

@@ -100,6 +100,68 @@ def test_export_template():
     if os.path.exists(temp_filename):
       os.unlink(temp_filename)
 
+def test_import_template_cli_command():
+  """TDD RED PHASE: Test import-template CLI command integration
+  
+  This test validates the CLI integration for the import-template command, which is 
+  essential for making the import feature accessible to end users. Without CLI 
+  integration, users would need to write Python code to use the import functionality, 
+  which defeats the purpose of having a command-line tool. This test ensures that 
+  users can import templates from the command line.
+  
+  RED PHASE: This will fail because import-template command doesn't exist in CLI yet.
+  """
+  runner = CliRunner()
+  
+  # Create a test YAML template file
+  test_template = """
+document:
+  name: '{{DOC_NAME}}'
+  sections:
+  - name: Test Section
+    type: canvas
+    tables:
+    - name: Test Table
+      columns:
+      - name: Test Column
+        type: column
+        format:
+          type: text
+"""
+  
+  with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as temp_file:
+    temp_file.write(test_template)
+    temp_filename = temp_file.name
+
+  try:
+    # Test Scenario 1: Basic import-template command with file
+    # RED PHASE: This will fail because import-template command doesn't exist
+    result = runner.invoke(clickMain, ['import-template', '--file', temp_filename])
+    assert result.exit_code == 0
+    assert "Document created successfully" in result.output
+    # Should contain document ID in output
+    assert "ID=" in result.output
+    
+    # Test Scenario 2: Import with variable substitution
+    result = runner.invoke(clickMain, [
+      'import-template', 
+      '--file', temp_filename,
+      '--variables', 'DOC_NAME="My CLI Test Project"'
+    ])
+    assert result.exit_code == 0
+    assert "Document created successfully" in result.output
+    assert "My CLI Test Project" in result.output
+    
+    # Test Scenario 3: Error handling - missing file
+    result = runner.invoke(clickMain, ['import-template', '--file', 'nonexistent.yaml'])
+    assert result.exit_code != 0
+    assert "Error" in result.output
+    
+  finally:
+    # Clean up temp file  
+    if os.path.exists(temp_filename):
+      os.unlink(temp_filename)
+
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
 |                                M A I N   P R O C E D U R E                               |
 |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
@@ -115,6 +177,7 @@ def main():
   test_list_columns()
   test_list_rows()
   test_export_template()
+  test_import_template_cli_command()
 
 if __name__ == "__main__":
   main()
