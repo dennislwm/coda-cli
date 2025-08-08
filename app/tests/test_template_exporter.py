@@ -85,11 +85,51 @@ class TestTemplateExporter:
             }
         ]
 
+        # NESTED KEYS PHASE: Mock column responses for each table
+        columns_response_1 = [
+            {
+                "id": "c-zbG00zR3kP",
+                "type": "column",
+                "name": "Name",
+                "format": {"type": "select", "isArray": False},
+                "display": True
+            },
+            {
+                "id": "c-E9KfQcbivF", 
+                "type": "column",
+                "name": "Date Opened",
+                "format": {"format": "DD/MM/YY", "type": "date", "isArray": False}
+            }
+        ]
+        
+        columns_response_2 = [
+            {
+                "id": "c-xyz123",
+                "type": "column", 
+                "name": "Task Name",
+                "format": {"type": "text", "isArray": False},
+                "display": True
+            },
+            {
+                "id": "c-abc456",
+                "type": "column",
+                "name": "Total Cost",
+                "calculated": True,
+                "formula": "Quantity*[per Pack]",
+                "format": {"currencyCode": "USD", "precision": 2, "format": "currency", "type": "currency", "isArray": False}
+            }
+        ]
+
         # Mock API responses based on real structure
         mock_pycoda.get_doc.return_value = json.dumps(doc_response)
         mock_pycoda.list_sections.return_value = json.dumps(sections_response)
         # RED PHASE: Mock the list_tables API call (will fail because method doesn't exist yet)
         mock_pycoda.list_tables.return_value = json.dumps(tables_response)
+        # NESTED KEYS PHASE: Mock list_columns calls for each table
+        mock_pycoda.list_columns.side_effect = [
+            json.dumps(columns_response_1),  # For table grid-DSbwC3HRoo
+            json.dumps(columns_response_2)   # For table grid-xyz123
+        ]
 
         # Act
         result = exporter.extract_document_structure("M-29VGfvl-")
@@ -112,12 +152,34 @@ class TestTemplateExporter:
         assert result["tables"][0]["parent"]["name"] == "English Pack"
         assert result["tables"][1]["name"] == "Task Table"
         assert result["tables"][1]["parent"]["name"] == "Track"
+        
+        # NESTED KEYS PHASE: Verify column data is included
+        assert "columns" in result["tables"][0]
+        assert len(result["tables"][0]["columns"]) == 2
+        assert result["tables"][0]["columns"][0]["name"] == "Name"
+        assert result["tables"][0]["columns"][0]["type"] == "column"
+        assert result["tables"][0]["columns"][0]["format"]["type"] == "select"
+        assert result["tables"][0]["columns"][0]["display"] == True
+        
+        assert result["tables"][0]["columns"][1]["name"] == "Date Opened" 
+        assert result["tables"][0]["columns"][1]["format"]["type"] == "date"
+        
+        # Verify calculated column in second table
+        assert "columns" in result["tables"][1]
+        assert len(result["tables"][1]["columns"]) == 2
+        assert result["tables"][1]["columns"][1]["name"] == "Total Cost"
+        assert result["tables"][1]["columns"][1]["calculated"] == True
+        assert result["tables"][1]["columns"][1]["formula"] == "Quantity*[per Pack]"
 
         # Verify correct API calls were made
         mock_pycoda.get_doc.assert_called_once_with("M-29VGfvl-")
         mock_pycoda.list_sections.assert_called_once_with("M-29VGfvl-")
         # RED PHASE: Verify list_tables API call was made (will fail)
         mock_pycoda.list_tables.assert_called_once_with("M-29VGfvl-")
+        # NESTED KEYS PHASE: Verify list_columns API calls were made for each table
+        assert mock_pycoda.list_columns.call_count == 2
+        mock_pycoda.list_columns.assert_any_call("M-29VGfvl-", "grid-DSbwC3HRoo")
+        mock_pycoda.list_columns.assert_any_call("M-29VGfvl-", "grid-xyz123")
 
     def test_conservative_variable_detection(self):
         """TemplateExporter should detect variables conservatively using real document patterns"""

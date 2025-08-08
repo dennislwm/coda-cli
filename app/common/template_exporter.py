@@ -89,13 +89,47 @@ class TemplateExporter:
                             break
                         continue
 
-        # GREEN PHASE: Combine into structure for template generation including ownerName and tables
+        # NESTED KEYS PHASE: Get column data for each table
+        for table in tables_data:
+            table_id = table["id"]
+            columns_json = self.pycoda.list_columns(doc_id, table_id)
+            
+            # Parse columns data - handle both formats (similar to tables/sections)
+            columns_data = []
+            if columns_json and columns_json != "{}":
+                try:
+                    # Try parsing as JSON array first (from tests)
+                    parsed_columns = json.loads(columns_json)
+                    if isinstance(parsed_columns, list):
+                        columns_data = parsed_columns
+                    else:
+                        columns_data = [parsed_columns]
+                except json.JSONDecodeError:
+                    # Fall back to concatenated JSON objects parsing (from real API)
+                    decoder = json.JSONDecoder()
+                    idx = 0
+                    while idx < len(columns_json.strip()):
+                        try:
+                            obj, end_idx = decoder.raw_decode(columns_json, idx)
+                            columns_data.append(obj)
+                            idx = end_idx
+                        except json.JSONDecodeError:
+                            # Skip any whitespace or invalid characters
+                            idx += 1
+                            if idx >= len(columns_json):
+                                break
+                            continue
+            
+            # Add columns to table data
+            table["columns"] = columns_data
+
+        # NESTED KEYS PHASE: Combine into structure for template generation including ownerName, tables, and columns
         return {
             "id": doc_data["id"],
             "name": doc_data["name"],
             "ownerName": doc_data["ownerName"],  # GREEN PHASE: Add ownerName from doc_data
             "sections": sections_data,
-            "tables": tables_data  # GREEN PHASE: Add tables data
+            "tables": tables_data  # GREEN PHASE: Add tables data with columns
         }
 
     def detect_variables(self, document_structure):
@@ -156,7 +190,7 @@ class TemplateExporter:
         for var_name, var_value in detected_variables.items():
             template_name = template_name.replace(var_value, f"{{{{{var_name}}}}}")
 
-        # GREEN PHASE: Group tables by parent section name for nested structure
+        # NESTED KEYS PHASE: Group tables by parent section name with column definitions
         tables_by_section = {}
         if "tables" in document_structure and document_structure["tables"]:
             for table in document_structure["tables"]:
@@ -164,8 +198,36 @@ class TemplateExporter:
                 if parent_section_name not in tables_by_section:
                     tables_by_section[parent_section_name] = []
                 
-                # Create table entry without parent field (redundant in nested structure)
+                # NESTED KEYS PHASE: Create table entry with column definitions
                 table_entry = {"name": table["name"]}
+                
+                # Add columns if they exist
+                if "columns" in table and table["columns"]:
+                    table_columns = []
+                    for column in table["columns"]:
+                        column_entry = {
+                            "name": column["name"],
+                            "type": column.get("type", "column")
+                        }
+                        
+                        # Add format information if available
+                        if "format" in column:
+                            column_entry["format"] = column["format"]
+                        
+                        # Add display setting
+                        if "display" in column:
+                            column_entry["display"] = column["display"]
+                        
+                        # Add calculated field and formula if it's a calculated column
+                        if column.get("calculated", False):
+                            column_entry["calculated"] = True
+                            if "formula" in column:
+                                column_entry["formula"] = column["formula"]
+                        
+                        table_columns.append(column_entry)
+                    
+                    table_entry["columns"] = table_columns
+                
                 tables_by_section[parent_section_name].append(table_entry)
 
         # Convert sections from Coda API format to nested DocumentCreator format
