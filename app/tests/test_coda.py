@@ -162,6 +162,47 @@ document:
     if os.path.exists(temp_filename):
       os.unlink(temp_filename)
 
+
+def test_register_template_cli_command():
+  """TDD RED PHASE: Test register-template CLI command integration
+  
+  This test validates the CLI integration for the register-template command, which allows 
+  users to register templates in the system's template registry for easy reuse. This 
+  business behavior is essential for template management workflow where users can register 
+  commonly used document structures and reference them by name later.
+  
+  RED PHASE: This will fail because register-template command doesn't exist in CLI yet.
+  """
+  runner = CliRunner()
+  
+  # Test Scenario 1: Register template with name and document ID
+  # RED PHASE: This will fail because register-template command doesn't exist
+  result = runner.invoke(clickMain, ['register-template', '--name', 'project-kickoff', '--doc', strTestDoc])
+  assert result.exit_code == 0
+  assert "Template 'project-kickoff' registered successfully" in result.output
+  assert strTestDoc in result.output  # Should show the document ID in confirmation
+  
+  # Test Scenario 2: Register template with description
+  result = runner.invoke(clickMain, [
+    'register-template', 
+    '--name', 'team-retrospective',
+    '--doc', strDoc,
+    '--description', 'Weekly team retrospective template'
+  ])
+  assert result.exit_code == 0
+  assert "Template 'team-retrospective' registered successfully" in result.output
+  assert "Weekly team retrospective template" in result.output
+  
+  # Test Scenario 3: Error handling - missing required arguments
+  result = runner.invoke(clickMain, ['register-template', '--name', 'incomplete'])
+  assert result.exit_code != 0
+  assert "Error" in result.output or "Usage" in result.output
+  
+  # Test Scenario 4: Error handling - missing name argument
+  result = runner.invoke(clickMain, ['register-template', '--doc', strDoc])
+  assert result.exit_code != 0
+  assert "Error" in result.output or "Usage" in result.output
+
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
 |                                M A I N   P R O C E D U R E                               |
 |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
@@ -178,6 +219,7 @@ def main():
   test_list_rows()
   test_export_template()
   test_import_template_cli_command()
+  test_register_template_cli_command()
 
 if __name__ == "__main__":
   main()

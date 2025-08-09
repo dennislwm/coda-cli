@@ -5,6 +5,7 @@ import click
 # Custom library
 from common.pycoda import Pycoda
 from common.template_exporter import TemplateExporter
+from common.template_registry import TemplateRegistry
 # Standard library
 import json
 import os
@@ -153,6 +154,71 @@ class Coda(object):
       # Convert other exceptions to Click exceptions with proper exit codes
       raise click.ClickException(f"Import failed: {str(e)}")
 
+  def export_table(self, strDocId, strTableId, strOutputFile=None):
+    """Export table data as CSV with comprehensive error handling"""
+    try:
+      from common.table_data_exporter import TableDataExporter
+
+      # Check if doc parameter is a template name and resolve it
+      try:
+        from common.template_registry import TemplateRegistry
+        registry = TemplateRegistry()
+        if registry.is_template_registered(strDocId):
+          strDocId = registry.get_template_doc_id(strDocId)
+      except Exception:
+        # If any registry error occurs, use original doc ID (backward compatibility)
+        pass
+      
+      # Create TableDataExporter instance
+      exporter = TableDataExporter(self.objCoda)
+      
+      # Export table data to CSV
+      csv_content = exporter.export_table_csv(strDocId, strTableId)
+      
+      if not csv_content.strip():
+        print("Warning: No data found for the specified table")
+        return
+        
+      if strOutputFile:
+        # Write to file with error handling
+        try:
+          with open(strOutputFile, "w", encoding="utf-8") as f:
+            f.write(csv_content)
+          print(f"Table data exported to {strOutputFile}")
+        except PermissionError:
+          raise click.ClickException(f"Permission denied: Cannot write to {strOutputFile}")
+        except Exception as e:
+          raise click.ClickException(f"File error: {str(e)}")
+      else:
+        # Print to stdout
+        print(csv_content)
+        
+    except click.ClickException:
+      # Re-raise Click exceptions (they handle exit codes properly)
+      raise
+    except Exception as e:
+      # Convert other exceptions to Click exceptions with proper exit codes
+      raise click.ClickException(f"Export failed: {str(e)}")
+
+  def register_template(self, strName, strDocId, strDescription=None):
+    """Register a template with given name and document ID using TemplateRegistry"""
+    try:
+      # Create TemplateRegistry instance
+      registry = TemplateRegistry()
+      
+      # Register template
+      registry.register_template(strName, strDocId)
+      
+      # Display success message
+      success_message = f"Template '{strName}' registered successfully with document ID: {strDocId}"
+      if strDescription:
+        success_message += f"\nDescription: {strDescription}"
+      
+      print(success_message)
+      
+    except Exception as e:
+      # Convert exceptions to Click exceptions with proper exit codes
+      raise click.ClickException(f"Registration failed: {str(e)}")
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|
   |                        I N T E R N A L   C L A S S   M E T H O D S                       |
   |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
@@ -397,6 +463,33 @@ def import_template(objCoda, file, variables):
   """ Import YAML template and create new document """
   objCoda.import_template(file, variables)
 
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                        E X P O R T _ T A B L E   C O M M A N D                           |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True, help='Document ID')
+@click.option('--table', required=True, help='Table ID')
+@click.option('--output', '-o', help='Output CSV file path (optional)')
+@click.pass_obj
+#---------
+# Function 
+def export_table(objCoda, doc, table, output):
+  """ Export table data as CSV """
+  objCoda.export_table(doc, table, output)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                      R E G I S T E R _ T E M P L A T E   C O M M A N D                   |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--name', required=True, help='Template name')
+@click.option('--doc', required=True, help='Document ID')
+@click.option('--description', help='Template description (optional)')
+@click.pass_obj
+#---------
+# Function 
+def register_template(objCoda, name, doc, description):
+  """ Register a document as a template """
+  objCoda.register_template(name, doc, description)
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
 |                                M A I N   P R O C E D U R E                               |
 |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
