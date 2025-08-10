@@ -99,6 +99,64 @@ class TemplateRegistry:
         return False
 
     """--------+---------+---------+---------+---------+---------+---------+---------+---------|
+    |                                 C L I   M E T H O D S                                    |
+    |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+    def register_template_cli(self, name: str, doc_id: str, description: str = None) -> None:
+        """Register template with CLI-specific formatting and error handling"""
+        try:
+            # Register template using core method
+            self.register_template(name, doc_id)
+            
+            # Display success message
+            success_message = f"Template '{name}' registered successfully with document ID: {doc_id}"
+            if description:
+                success_message += f"\nDescription: {description}"
+            
+            print(success_message)
+            
+        except Exception as e:
+            # Import click here to avoid circular dependencies
+            import click
+            raise click.ClickException(f"Registration failed: {str(e)}")
+
+    def list_templates_cli(self) -> None:
+        """List all registered templates with CLI-specific formatting"""
+        try:
+            # Get all templates using core method
+            templates = self.list_templates()
+            
+            if not templates:
+                print("No templates registered")
+                return
+            
+            # Display templates in a readable format
+            print("Registered Templates:")
+            print("-" * 50)
+            for name, doc_id in templates.items():
+                print(f"  {name:20} -> {doc_id}")
+            
+        except Exception as e:
+            # Import click here to avoid circular dependencies
+            import click
+            raise click.ClickException(f"Failed to list templates: {str(e)}")
+
+    def remove_template_cli(self, name: str) -> None:
+        """Remove template with CLI-specific messaging"""
+        try:
+            # Remove template using core method
+            success = self.remove_template(name)
+            
+            if success:
+                print(f"Template '{name}' removed successfully")
+            else:
+                print(f"Template '{name}' not found in registry")
+            
+        except Exception as e:
+            # Import click here to avoid circular dependencies
+            import click
+            raise click.ClickException(f"Failed to remove template: {str(e)}")
+
+    """--------+---------+---------+---------+---------+---------+---------+---------+---------|
     |                                P R I V A T E   M E T H O D S                              |
     |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
     def _load_templates(self) -> Dict[str, str]:

@@ -115,133 +115,37 @@ class Coda(object):
   def export_template(self, strDocId, strOutputFile=None):
     """Export document as YAML template using TemplateExporter"""
     strDocId = self.resolve_doc_id(strDocId)
-    # Create TemplateExporter instance
     exporter = TemplateExporter(self.objCoda)
-    
-    # Extract document structure
-    doc_structure = exporter.extract_document_structure(strDocId)
-    
-    # Detect template variables
-    variables = exporter.detect_variables(doc_structure)
-    
-    # Generate YAML template
-    yaml_template = exporter.generate_yaml_template(doc_structure, variables)
-    
-    if strOutputFile:
-      # Write to file
-      with open(strOutputFile, "w") as f:
-        f.write(yaml_template)
-      print(f"Template exported to {strOutputFile}")
-    else:
-      # Print to stdout
-      print(yaml_template)
+    exporter.export_with_cli_output(strDocId, strOutputFile)
 
   def import_template(self, strTemplateFile, strVariables=None):
     """Import YAML template and create new document using TemplateImporter"""
     from common.template_importer import TemplateImporter
-    import os
-    
-    try:
-      # Check if template file exists
-      if not os.path.exists(strTemplateFile):
-        raise click.ClickException(f"Template file '{strTemplateFile}' not found")
-      
-      # Read YAML template from file
-      with open(strTemplateFile, "r") as f:
-        yaml_content = f.read()
-      
-      # Parse variables from command line format: "VAR1=value1 VAR2=value2"
-      # Handle quoted values with spaces: 'VAR1=My Project Name VAR2=value2'
-      variables = {}
-      if strVariables:
-        import shlex
-        # Use shlex to handle quoted arguments properly
-        try:
-          # Split respecting quotes: "DOC_NAME=My CLI Test Project" becomes one argument
-          args = shlex.split(strVariables)
-          for var_pair in args:
-            if "=" in var_pair:
-              key, value = var_pair.split("=", 1)
-              variables[key] = value
-        except Exception:
-          # Fallback to simple split if shlex fails
-          for var_pair in strVariables.split():
-            if "=" in var_pair:
-              key, value = var_pair.split("=", 1)
-              variables[key] = value
-      
-      # Create TemplateImporter instance and import template
-      importer = TemplateImporter()
-      result = importer.create_document_from_template(yaml_content, variables, self.objCoda)
-      
-      # Display success message
-      print(f"Document created successfully: ID={result['id']}, Name='{result['name']}'")
-      
-    except click.ClickException:
-      # Re-raise Click exceptions (they handle exit codes properly)
-      raise
-    except Exception as e:
-      # Convert other exceptions to Click exceptions with proper exit codes
-      raise click.ClickException(f"Import failed: {str(e)}")
+    importer = TemplateImporter()
+    importer.import_with_cli_output(strTemplateFile, strVariables, self.objCoda)
 
   def export_table(self, strDocId, strTableId, strOutputFile=None):
     """Export table data as CSV with comprehensive error handling"""
-    try:
-      from common.table_data_exporter import TableDataExporter
-
-      # Resolve template name to document ID if registered
-      strDocId = self.resolve_doc_id(strDocId)
-      
-      # Create TableDataExporter instance
-      exporter = TableDataExporter(self.objCoda)
-      
-      # Export table data to CSV
-      csv_content = exporter.export_table_csv(strDocId, strTableId)
-      
-      if not csv_content.strip():
-        print("Warning: No data found for the specified table")
-        return
-        
-      if strOutputFile:
-        # Write to file with error handling
-        try:
-          with open(strOutputFile, "w", encoding="utf-8") as f:
-            f.write(csv_content)
-          print(f"Table data exported to {strOutputFile}")
-        except PermissionError:
-          raise click.ClickException(f"Permission denied: Cannot write to {strOutputFile}")
-        except Exception as e:
-          raise click.ClickException(f"File error: {str(e)}")
-      else:
-        # Print to stdout
-        print(csv_content)
-        
-    except click.ClickException:
-      # Re-raise Click exceptions (they handle exit codes properly)
-      raise
-    except Exception as e:
-      # Convert other exceptions to Click exceptions with proper exit codes
-      raise click.ClickException(f"Export failed: {str(e)}")
+    from common.table_data_exporter import TableDataExporter
+    strDocId = self.resolve_doc_id(strDocId)
+    exporter = TableDataExporter(self.objCoda)
+    exporter.export_with_cli_output(strDocId, strTableId, strOutputFile)
 
   def register_template(self, strName, strDocId, strDescription=None):
     """Register a template with given name and document ID using TemplateRegistry"""
-    try:
-      # Create TemplateRegistry instance
-      registry = TemplateRegistry()
-      
-      # Register template
-      registry.register_template(strName, strDocId)
-      
-      # Display success message
-      success_message = f"Template '{strName}' registered successfully with document ID: {strDocId}"
-      if strDescription:
-        success_message += f"\nDescription: {strDescription}"
-      
-      print(success_message)
-      
-    except Exception as e:
-      # Convert exceptions to Click exceptions with proper exit codes
-      raise click.ClickException(f"Registration failed: {str(e)}")
+    registry = TemplateRegistry()
+    registry.register_template_cli(strName, strDocId, strDescription)
+
+  def list_templates(self):
+    """List all registered templates"""
+    registry = TemplateRegistry()
+    registry.list_templates_cli()
+
+  def remove_template(self, strName):
+    """Remove a template from the registry"""
+    registry = TemplateRegistry()
+    registry.remove_template_cli(strName)
+  
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|
   |                        I N T E R N A L   C L A S S   M E T H O D S                       |
   |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
@@ -513,6 +417,28 @@ def export_table(objCoda, doc, table, output):
 def register_template(objCoda, name, doc, description):
   """ Register a document as a template """
   objCoda.register_template(name, doc, description)
+
+#---------
+# Command
+@clickMain.command()
+@click.pass_obj
+#---------
+# Function 
+def list_templates(objCoda):
+  """ List all registered templates """
+  objCoda.list_templates()
+
+#---------
+# Command
+@clickMain.command()
+@click.option('--name', required=True, help='Template name to remove')
+@click.pass_obj
+#---------
+# Function 
+def remove_template(objCoda, name):
+  """ Remove a registered template """
+  objCoda.remove_template(name)
+
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
 |                                M A I N   P R O C E D U R E                               |
 |----------+---------+---------+---------+---------+---------+---------+---------+-------"""

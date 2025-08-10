@@ -2,119 +2,21 @@ from coda import clickMain
 from click.testing import CliRunner
 import tempfile
 import os
+import pytest
 
-strDoc='QlIwnjdg3j'
-strTable='table-6JxYP9k3MA'
-# Test document ID specified by user for template export testing
-strTestDoc='-vNHwSh0wi'
+strDoc = 'QlIwnjdg3j'
+strTable = 'table-6JxYP9k3MA'
+strTestDoc = '-vNHwSh0wi'
 
-def test_version():
-  runner = CliRunner()
-  result = runner.invoke(clickMain)
-  assert result.exit_code == 0
-  assert "v" in result.output 
+@pytest.fixture
+def runner():
+    """CLI runner fixture."""
+    return CliRunner()
 
-def test_list_docs():
-  runner = CliRunner()
-  result = runner.invoke(clickMain, ['list-docs'])
-  assert result.exit_code == 0
-  assert "doc" in result.output 
-
-def test_list_controls():
-  runner = CliRunner()
-  result = runner.invoke(clickMain, ['list-controls', '--doc', strDoc])
-  assert result.exit_code == 0
-  assert "control" in result.output 
-
-def test_list_folders():
-  runner = CliRunner()
-  result = runner.invoke(clickMain, ['list-folders', '--doc', strDoc])
-  assert result.exit_code == 0
-  # assert "folder" in result.output 
-
-def test_list_formulas():
-  runner = CliRunner()
-  result = runner.invoke(clickMain, ['list-formulas', '--doc', strDoc])
-  assert result.exit_code == 0
-  # assert "formula" in result.output 
-
-def test_list_sections():
-  runner = CliRunner()
-  result = runner.invoke(clickMain, ['list-sections', '--doc', strDoc])
-  assert result.exit_code == 0
-  assert "page" in result.output 
-
-def test_list_tables():
-  runner = CliRunner()
-  result = runner.invoke(clickMain, ['list-tables', '--doc', strDoc])
-  assert result.exit_code == 0
-  assert "table" in result.output 
-
-def test_list_views():
-  runner = CliRunner()
-  result = runner.invoke(clickMain, ['list-views', '--doc', strDoc])
-  assert result.exit_code == 0
-  assert "view" in result.output 
-
-def test_list_columns():
-  runner = CliRunner()
-  result = runner.invoke(clickMain, ['list-columns', '--doc', strDoc, '--table', strTable])
-  assert result.exit_code == 0
-  assert "col" in result.output 
-
-def test_list_rows():
-  runner = CliRunner()
-  result = runner.invoke(clickMain, ['list-rows', '--doc', strDoc, '--table', strTable])
-  assert result.exit_code == 0
-  assert "row" in result.output 
-
-def test_export_template():
-  """ Test export-template CLI command (TDD RED phase) """
-  runner = CliRunner()
-  
-  # Test basic export-template command without output option
-  result = runner.invoke(clickMain, ['export-template', '--doc', strTestDoc])
-  assert result.exit_code == 0
-  assert "document:" in result.output  # Should contain YAML with document key
-  assert "name:" in result.output      # Should contain name key
-  assert "sections:" in result.output  # Should contain sections key
-  
-  # Test export-template command with output file option
-  with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as temp_file:
-    temp_filename = temp_file.name
-  
-  try:
-    result = runner.invoke(clickMain, ['export-template', '--doc', strTestDoc, '--output', temp_filename])
-    assert result.exit_code == 0
-    assert "Template exported to" in result.output or "exported" in result.output.lower()
-    
-    # Verify file was created and contains YAML content
-    assert os.path.exists(temp_filename)
-    with open(temp_filename, 'r') as f:
-      content = f.read()
-      assert "document:" in content
-      assert "name:" in content
-      assert "sections:" in content
-  finally:
-    # Clean up temp file
-    if os.path.exists(temp_filename):
-      os.unlink(temp_filename)
-
-def test_import_template_cli_command():
-  """TDD RED PHASE: Test import-template CLI command integration
-  
-  This test validates the CLI integration for the import-template command, which is 
-  essential for making the import feature accessible to end users. Without CLI 
-  integration, users would need to write Python code to use the import functionality, 
-  which defeats the purpose of having a command-line tool. This test ensures that 
-  users can import templates from the command line.
-  
-  RED PHASE: This will fail because import-template command doesn't exist in CLI yet.
-  """
-  runner = CliRunner()
-  
-  # Create a test YAML template file
-  test_template = """
+@pytest.fixture
+def temp_yaml_file():
+    """Temporary YAML template file fixture."""
+    test_template = """
 document:
   name: '{{DOC_NAME}}'
   sections:
@@ -128,98 +30,132 @@ document:
         format:
           type: text
 """
-  
-  with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as temp_file:
-    temp_file.write(test_template)
-    temp_filename = temp_file.name
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as temp_file:
+        temp_file.write(test_template)
+        temp_filename = temp_file.name
+    
+    yield temp_filename
+    
+    if os.path.exists(temp_filename):
+        os.unlink(temp_filename)
 
-  try:
-    # Test Scenario 1: Basic import-template command with file
-    # RED PHASE: This will fail because import-template command doesn't exist
-    result = runner.invoke(clickMain, ['import-template', '--file', temp_filename])
+def _assert_yaml_structure(content):
+    """Helper to validate YAML template structure."""
+    required_keys = ["document:", "name:", "sections:"]
+    assert all(key in content for key in required_keys)
+
+@pytest.mark.parametrize("command,expected_output", [
+    ([], "v"),
+    (['list-docs'], "doc"),
+    (['list-controls', '--doc', strDoc], "control"),
+    (['list-folders', '--doc', strDoc], None),
+    (['list-formulas', '--doc', strDoc], None),
+    (['list-sections', '--doc', strDoc], "page"),
+    (['list-tables', '--doc', strDoc], "table"),
+    (['list-views', '--doc', strDoc], "view"),
+    (['list-columns', '--doc', strDoc, '--table', strTable], "col"),
+    (['list-rows', '--doc', strDoc, '--table', strTable], "row"),
+])
+def test_basic_cli_commands(runner, command, expected_output):
+    """Test basic CLI commands for successful execution and expected output patterns."""
+    result = runner.invoke(clickMain, command)
+    assert result.exit_code == 0
+    if expected_output:
+        assert expected_output in result.output
+
+def test_export_template(runner, temp_yaml_file):
+    """Test export-template CLI command functionality."""
+    # Test basic export without output file
+    result = runner.invoke(clickMain, ['export-template', '--doc', strTestDoc])
+    assert result.exit_code == 0
+    _assert_yaml_structure(result.output)
+    
+    # Test export with output file
+    result = runner.invoke(clickMain, ['export-template', '--doc', strTestDoc, '--output', temp_yaml_file])
+    assert result.exit_code == 0
+    assert "exported" in result.output.lower()
+    
+    assert os.path.exists(temp_yaml_file)
+    with open(temp_yaml_file, 'r') as f:
+        _assert_yaml_structure(f.read())
+
+def test_import_template_cli_command(runner, temp_yaml_file):
+    """Test import-template CLI functionality and error handling."""
+    # Basic import functionality
+    result = runner.invoke(clickMain, ['import-template', '--file', temp_yaml_file])
     assert result.exit_code == 0
     assert "Document created successfully" in result.output
-    # Should contain document ID in output
     assert "ID=" in result.output
     
-    # Test Scenario 2: Import with variable substitution
+    # Import with variable substitution
     result = runner.invoke(clickMain, [
-      'import-template', 
-      '--file', temp_filename,
-      '--variables', 'DOC_NAME="My CLI Test Project"'
+        'import-template', '--file', temp_yaml_file,
+        '--variables', 'DOC_NAME="My CLI Test Project"'
     ])
     assert result.exit_code == 0
     assert "Document created successfully" in result.output
     assert "My CLI Test Project" in result.output
     
-    # Test Scenario 3: Error handling - missing file
+    # Error handling for missing file
     result = runner.invoke(clickMain, ['import-template', '--file', 'nonexistent.yaml'])
     assert result.exit_code != 0
     assert "Error" in result.output
+
+def test_template_management_workflow(runner):
+    """Test complete template registry workflow with error handling."""
+    template_name = 'test-workflow-template'
     
-  finally:
-    # Clean up temp file  
-    if os.path.exists(temp_filename):
-      os.unlink(temp_filename)
+    # Register template
+    result = runner.invoke(clickMain, ['register-template', '--name', template_name, '--doc', strTestDoc])
+    assert result.exit_code == 0
+    assert f"Template '{template_name}' registered successfully" in result.output
+    assert strTestDoc in result.output
+    
+    # Register with description
+    desc_name = 'described-template'
+    description = 'Test template with description'
+    result = runner.invoke(clickMain, [
+        'register-template', '--name', desc_name, '--doc', strDoc,
+        '--description', description
+    ])
+    assert result.exit_code == 0
+    assert f"Template '{desc_name}' registered successfully" in result.output
+    assert description in result.output
+    
+    # List templates
+    result = runner.invoke(clickMain, ['list-templates'])
+    assert result.exit_code == 0
+    assert "Registered Templates:" in result.output
+    assert template_name in result.output
+    assert strTestDoc in result.output
+    
+    # Remove template
+    result = runner.invoke(clickMain, ['remove-template', '--name', template_name])
+    assert result.exit_code == 0
+    assert f"Template '{template_name}' removed successfully" in result.output
+    
+    # Verify removal
+    result = runner.invoke(clickMain, ['list-templates'])
+    assert result.exit_code == 0
+    assert template_name not in result.output
+    
+    # Error handling cases
+    result = runner.invoke(clickMain, ['remove-template', '--name', 'nonexistent-template'])
+    assert result.exit_code == 0
+    assert "Template 'nonexistent-template' not found in registry" in result.output
+    
+    # Test missing arguments
+    for command in [
+        ['register-template', '--name', 'incomplete'],
+        ['register-template', '--doc', strDoc],
+        ['remove-template']
+    ]:
+        result = runner.invoke(clickMain, command)
+        assert result.exit_code != 0
+        assert any(error_text in result.output for error_text in ["Error", "Usage"])
 
-
-def test_register_template_cli_command():
-  """TDD RED PHASE: Test register-template CLI command integration
-  
-  This test validates the CLI integration for the register-template command, which allows 
-  users to register templates in the system's template registry for easy reuse. This 
-  business behavior is essential for template management workflow where users can register 
-  commonly used document structures and reference them by name later.
-  
-  RED PHASE: This will fail because register-template command doesn't exist in CLI yet.
-  """
-  runner = CliRunner()
-  
-  # Test Scenario 1: Register template with name and document ID
-  # RED PHASE: This will fail because register-template command doesn't exist
-  result = runner.invoke(clickMain, ['register-template', '--name', 'project-kickoff', '--doc', strTestDoc])
-  assert result.exit_code == 0
-  assert "Template 'project-kickoff' registered successfully" in result.output
-  assert strTestDoc in result.output  # Should show the document ID in confirmation
-  
-  # Test Scenario 2: Register template with description
-  result = runner.invoke(clickMain, [
-    'register-template', 
-    '--name', 'team-retrospective',
-    '--doc', strDoc,
-    '--description', 'Weekly team retrospective template'
-  ])
-  assert result.exit_code == 0
-  assert "Template 'team-retrospective' registered successfully" in result.output
-  assert "Weekly team retrospective template" in result.output
-  
-  # Test Scenario 3: Error handling - missing required arguments
-  result = runner.invoke(clickMain, ['register-template', '--name', 'incomplete'])
-  assert result.exit_code != 0
-  assert "Error" in result.output or "Usage" in result.output
-  
-  # Test Scenario 4: Error handling - missing name argument
-  result = runner.invoke(clickMain, ['register-template', '--doc', strDoc])
-  assert result.exit_code != 0
-  assert "Error" in result.output or "Usage" in result.output
-
-"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
-|                                M A I N   P R O C E D U R E                               |
-|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
-def main():
-  test_version()
-  test_list_docs()
-  test_list_controls()
-  test_list_folders()
-  test_list_formulas()
-  test_list_sections()
-  test_list_tables()
-  test_list_views()
-  test_list_columns()
-  test_list_rows()
-  test_export_template()
-  test_import_template_cli_command()
-  test_register_template_cli_command()
-
-if __name__ == "__main__":
-  main()
+def test_list_templates_empty_registry(runner):
+    """Test list-templates handles empty registry gracefully."""
+    result = runner.invoke(clickMain, ['list-templates'])
+    assert result.exit_code == 0
+    assert any(text in result.output for text in ["No templates registered", "Registered Templates:"])

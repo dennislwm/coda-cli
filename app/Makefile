@@ -1,4 +1,4 @@
-.PHONY: default ci_build ci_freeze ci_test_build ci_test_freeze docker_build docker_clean docker_run install_freeze install_new run shell shell_clean test test_verbose help list-docs list-controls list-folders list-formulas list-sections list-tables list-views list-columns list-rows get-doc get-section get-column export-table export-template import-template register-template
+.PHONY: default ci_build ci_freeze ci_test_build ci_test_freeze docker_build docker_clean docker_run install_freeze install_new run shell shell_clean test test_verbose help list-docs list-controls list-folders list-formulas list-sections list-tables list-views list-columns list-rows get-doc get-section get-column export-table export-template import-template register-template list-templates remove-template
 
 default: run
 
@@ -140,4 +140,14 @@ register-template:
 		else \
 			pipenv run python coda.py register-template --name $(NAME) --doc $(DOC); \
 		fi \
+	fi
+
+list-templates:
+	@echo "Usage: make list-templates"
+	pipenv run python coda.py list-templates
+
+remove-template:
+	@echo "Usage: make remove-template NAME=<template_name>"
+	@if [ -n "$(NAME)" ]; then \
+		pipenv run python coda.py remove-template --name $(NAME); \
 	fi

@@ -64,3 +64,63 @@ class TemplateImporter:
             
         except Exception as e:
             raise ValueError(f"Failed to create document from template: {str(e)}") from e
+
+    def import_with_cli_output(self, template_file, variables_str, pycoda_client):
+        """Import YAML template and create new document with CLI-specific handling"""
+        import os
+        
+        try:
+            # Check if template file exists
+            if not os.path.exists(template_file):
+                import click
+                raise click.ClickException(f"Template file not found: {template_file}")
+            
+            # Read template file
+            with open(template_file, "r", encoding="utf-8") as f:
+                yaml_content = f.read()
+            
+            # Parse variables if provided
+            variables = {}
+            if variables_str:
+                try:
+                    # Parse "VAR1=value1 VAR2=value2" format with quoted values support
+                    import shlex
+                    # Use shlex to handle quoted arguments properly
+                    try:
+                        # Split respecting quotes: "DOC_NAME=My CLI Test Project" becomes one argument
+                        args = shlex.split(variables_str)
+                        for var_pair in args:
+                            if "=" in var_pair:
+                                key, value = var_pair.split("=", 1)
+                                variables[key.strip()] = value.strip()
+                    except Exception:
+                        # Fallback to simple split if shlex fails
+                        for var_assignment in variables_str.split():
+                            if '=' in var_assignment:
+                                key, value = var_assignment.split('=', 1)
+                                variables[key.strip()] = value.strip()
+                except Exception as e:
+                    import click
+                    raise click.ClickException(f"Invalid variables format: {str(e)}")
+            
+            # Create document from template
+            result = self.create_document_from_template(yaml_content, variables, pycoda_client)
+            
+            # Display success message with document info
+            doc_name = result.get("name", "Unknown")
+            doc_id = result.get("id", "Unknown")
+            print(f"Document created successfully!")
+            print(f"Name: {doc_name}")
+            print(f"ID={doc_id}")
+            
+            # Show variable substitutions if any were used
+            if variables:
+                print(f"Variables applied: {', '.join(f'{k}={v}' for k, v in variables.items())}")
+                
+        except Exception as e:
+            # Import click here to avoid circular dependencies
+            import click
+            if isinstance(e, click.ClickException):
+                raise
+            else:
+                raise click.ClickException(f"Import failed: {str(e)}")

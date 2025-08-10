@@ -83,3 +83,37 @@ class TableDataExporter(BaseExporter):
                     # Ensure string conversion and handle None values
                     return str(cell_value) if cell_value is not None else ""
         return ""
+
+    def export_with_cli_output(self, doc_id, table_id, output_file=None):
+        """Export table data as CSV with CLI-specific file handling"""
+        try:
+            # Export table data to CSV
+            csv_content = self.export_table_csv(doc_id, table_id)
+            
+            if not csv_content.strip():
+                print("Warning: No data found for the specified table")
+                return
+                
+            if output_file:
+                # Write to file with error handling
+                try:
+                    with open(output_file, "w", encoding="utf-8") as f:
+                        f.write(csv_content)
+                    print(f"Table data exported to {output_file}")
+                except PermissionError:
+                    import click
+                    raise click.ClickException(f"Permission denied: Cannot write to {output_file}")
+                except Exception as e:
+                    import click
+                    raise click.ClickException(f"File error: {str(e)}")
+            else:
+                # Print to stdout
+                print(csv_content)
+                
+        except Exception as e:
+            # Import click here to avoid circular dependencies
+            import click
+            if isinstance(e, click.ClickException):
+                raise
+            else:
+                raise click.ClickException(f"Export failed: {str(e)}")

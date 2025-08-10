@@ -109,3 +109,39 @@ class TemplateExporter(BaseExporter):
                 column_entry["formula"] = column["formula"]
         
         return column_entry
+
+    def export_with_cli_output(self, doc_id, output_file=None):
+        """Export document as YAML template with CLI-specific file handling"""
+        try:
+            # Extract document structure
+            document_structure = self.extract_document_structure(doc_id)
+            
+            # Detect variables
+            detected_variables = self.detect_variables(document_structure)
+            
+            # Generate YAML template
+            yaml_content = self.generate_yaml_template(document_structure, detected_variables)
+            
+            if output_file:
+                # Write to file with error handling
+                try:
+                    with open(output_file, "w", encoding="utf-8") as f:
+                        f.write(yaml_content)
+                    print(f"Template exported to {output_file}")
+                except PermissionError:
+                    import click
+                    raise click.ClickException(f"Permission denied: Cannot write to {output_file}")
+                except Exception as e:
+                    import click
+                    raise click.ClickException(f"File error: {str(e)}")
+            else:
+                # Print to stdout
+                print(yaml_content)
+                
+        except Exception as e:
+            # Import click here to avoid circular dependencies
+            import click
+            if isinstance(e, click.ClickException):
+                raise
+            else:
+                raise click.ClickException(f"Export failed: {str(e)}")
