@@ -35,15 +35,36 @@ class Coda(object):
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|
   |                        E X T E R N A L   C L A S S   M E T H O D S                       |
   |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+  def resolve_doc_id(self, strDocId):
+    """Resolve template name to document ID if registered, otherwise return original ID
+    
+    Args:
+        strDocId: Either a template name or direct document ID
+        
+    Returns:
+        str: Resolved document ID
+    """
+    try:
+      from common.template_registry import TemplateRegistry
+      registry = TemplateRegistry()
+      if registry.is_template_registered(strDocId):
+        return registry.get_template_doc_id(strDocId)
+    except Exception:
+      # If any registry error occurs, use original doc ID (backward compatibility)
+      pass
+    return strDocId
   def get_column(self, strDocId, strTableId, strColumnId):
+    strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.get_column(strDocId, strTableId, strColumnId)
     print ( result )
 
   def get_doc(self, strDocId):
+    strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.get_doc(strDocId)
     print ( result )
 
   def get_section(self, strDocId, strSectionId):
+    strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.get_section(strDocId, strSectionId)
     print ( result )
 
@@ -52,39 +73,48 @@ class Coda(object):
     print( result )
 
   def list_controls(self, strDocId):
+    strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_controls(strDocId)
     print ( result )
 
   def list_folders(self, strDocId):
+    strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_folders(strDocId)
     print ( result )
 
   def list_formulas(self, strDocId):
+    strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_formulas(strDocId)
     print ( result )
 
   def list_sections(self, strDocId):
+    strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_sections(strDocId)
     print ( result )
 
   def list_tables(self, strDocId):
+    strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_tables(strDocId)
     print ( result )
 
   def list_views(self, strDocId):
+    strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_views(strDocId)
     print ( result )
 
   def list_columns(self, strDocId, strTableId):
+    strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_columns(strDocId, strTableId)
     print ( result )
 
   def list_rows(self, strDocId, strTableId):
+    strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_rows(strDocId, strTableId)
     print ( result )
 
   def export_template(self, strDocId, strOutputFile=None):
     """Export document as YAML template using TemplateExporter"""
+    strDocId = self.resolve_doc_id(strDocId)
     # Create TemplateExporter instance
     exporter = TemplateExporter(self.objCoda)
     
@@ -159,15 +189,8 @@ class Coda(object):
     try:
       from common.table_data_exporter import TableDataExporter
 
-      # Check if doc parameter is a template name and resolve it
-      try:
-        from common.template_registry import TemplateRegistry
-        registry = TemplateRegistry()
-        if registry.is_template_registered(strDocId):
-          strDocId = registry.get_template_doc_id(strDocId)
-      except Exception:
-        # If any registry error occurs, use original doc ID (backward compatibility)
-        pass
+      # Resolve template name to document ID if registered
+      strDocId = self.resolve_doc_id(strDocId)
       
       # Create TableDataExporter instance
       exporter = TableDataExporter(self.objCoda)
