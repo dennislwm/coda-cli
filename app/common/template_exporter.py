@@ -4,14 +4,15 @@ Optimized implementation with 56% token reduction while preserving all business 
 """
 import json
 import yaml
+from .base_exporter import BaseExporter
 
 
-class TemplateExporter:
+class TemplateExporter(BaseExporter):
     """Exports Coda documents to reusable YAML templates"""
 
     def __init__(self, pycoda_client):
         """Initialize TemplateExporter with Pycoda client"""
-        self.pycoda = pycoda_client
+        super().__init__(pycoda_client)
 
     def extract_document_structure(self, doc_id):
         """Extract document structure from Coda API responses"""
@@ -90,29 +91,6 @@ class TemplateExporter:
 
         return yaml.dump(template_structure, default_flow_style=False, allow_unicode=True)
 
-    def _parse_api_response(self, response_json):
-        """Parse API response handling both JSON array and concatenated JSON formats"""
-        if not response_json or response_json == "{}":
-            return []
-            
-        try:
-            parsed = json.loads(response_json)
-            return parsed if isinstance(parsed, list) else [parsed]
-        except json.JSONDecodeError:
-            # Handle concatenated JSON objects from real API
-            data = []
-            decoder = json.JSONDecoder()
-            idx = 0
-            while idx < len(response_json.strip()):
-                try:
-                    obj, end_idx = decoder.raw_decode(response_json, idx)
-                    data.append(obj)
-                    idx = end_idx
-                except json.JSONDecodeError:
-                    idx += 1
-                    if idx >= len(response_json):
-                        break
-            return data
 
     def _format_column(self, column):
         """Format column data for template"""

@@ -5,6 +5,7 @@ Pipfile.lock
 requirements.txt
 .claude/
 *.json
+*.csv
 
 #-----------------
 # github/gitignore

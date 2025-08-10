@@ -56,51 +56,51 @@ help:
 	pipenv run python coda.py --help
 
 list-docs:
-	pipenv run python coda.py list-docs
+	pipenv run python coda.py list-docs | jq
 
 list-controls:
 	@echo "Usage: make list-controls DOC=<doc_id>"
-	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-controls --doc $(DOC); fi
+	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-controls --doc $(DOC) | jq; fi
 
 list-folders:
 	@echo "Usage: make list-folders DOC=<doc_id>"
-	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-folders --doc $(DOC); fi
+	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-folders --doc $(DOC) | jq; fi
 
 list-formulas:
 	@echo "Usage: make list-formulas DOC=<doc_id>"
-	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-formulas --doc $(DOC); fi
+	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-formulas --doc $(DOC) | jq; fi
 
 list-sections:
 	@echo "Usage: make list-sections DOC=<doc_id>"
-	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-sections --doc $(DOC); fi
+	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-sections --doc $(DOC) | jq; fi
 
 list-tables:
 	@echo "Usage: make list-tables DOC=<doc_id>"
-	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-tables --doc $(DOC); fi
+	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-tables --doc $(DOC) | jq; fi
 
 list-views:
 	@echo "Usage: make list-views DOC=<doc_id>"
-	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-views --doc $(DOC); fi
+	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-views --doc $(DOC) | jq; fi
 
 list-columns:
 	@echo "Usage: make list-columns DOC=<doc_id> TABLE=<table_id>"
-	@if [ -n "$(DOC)" ] && [ -n "$(TABLE)" ]; then pipenv run python coda.py list-columns --doc $(DOC) --table $(TABLE); fi
+	@if [ -n "$(DOC)" ] && [ -n "$(TABLE)" ]; then pipenv run python coda.py list-columns --doc $(DOC) --table $(TABLE) | jq; fi
 
 list-rows:
 	@echo "Usage: make list-rows DOC=<doc_id> TABLE=<table_id>"
-	@if [ -n "$(DOC)" ] && [ -n "$(TABLE)" ]; then pipenv run python coda.py list-rows --doc $(DOC) --table $(TABLE); fi
+	@if [ -n "$(DOC)" ] && [ -n "$(TABLE)" ]; then pipenv run python coda.py list-rows --doc $(DOC) --table $(TABLE) | jq; fi
 
 get-doc:
 	@echo "Usage: make get-doc DOC=<doc_id>"
-	@if [ -n "$(DOC)" ]; then pipenv run python coda.py get-doc --doc $(DOC); fi
+	@if [ -n "$(DOC)" ]; then pipenv run python coda.py get-doc --doc $(DOC) | jq; fi
 
 get-section:
 	@echo "Usage: make get-section DOC=<doc_id> SECTION=<section_id>"
-	@if [ -n "$(DOC)" ] && [ -n "$(SECTION)" ]; then pipenv run python coda.py get-section --doc $(DOC) --section $(SECTION); fi
+	@if [ -n "$(DOC)" ] && [ -n "$(SECTION)" ]; then pipenv run python coda.py get-section --doc $(DOC) --section $(SECTION) | jq; fi
 
 get-column:
 	@echo "Usage: make get-column DOC=<doc_id> TABLE=<table_id> COLUMN=<column_id>"
-	@if [ -n "$(DOC)" ] && [ -n "$(TABLE)" ] && [ -n "$(COLUMN)" ]; then pipenv run python coda.py get-column --doc $(DOC) --table $(TABLE) --column $(COLUMN); fi
+	@if [ -n "$(DOC)" ] && [ -n "$(TABLE)" ] && [ -n "$(COLUMN)" ]; then pipenv run python coda.py get-column --doc $(DOC) --table $(TABLE) --column $(COLUMN) | jq; fi
 
 export-table:
 	@echo "Usage: make export-table DOC=<doc_id> TABLE=<table_id> [OUTPUT=<file.csv>]"

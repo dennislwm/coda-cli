@@ -14,13 +14,13 @@ def test_export_table_basic():
     """
     # Mock API responses with expected data structure
     mock_columns = [
-        {"name": "Name", "type": "text"},
-        {"name": "Status", "type": "select"},
-        {"name": "Date", "type": "date"}
+        {"name": "Name", "type": "text", "id": "c-name-123"},
+        {"name": "Status", "type": "select", "id": "c-status-456"},
+        {"name": "Date", "type": "date", "id": "c-date-789"}
     ]
     
     mock_rows = [
-        {"values": {"Name": "Task 1", "Status": "Active", "Date": "2024-01-01"}}
+        {"values": {"c-name-123": "Task 1", "c-status-456": "Active", "c-date-789": "2024-01-01"}}
     ]
     
     with patch('common.pycoda.Pycoda.list_columns') as mock_list_columns, \
@@ -67,8 +67,8 @@ def test_export_table_file_permission_error():
     with clear error messages for users.
     """
     # Mock successful API calls
-    mock_columns = [{"name": "Task", "type": "text"}]
-    mock_rows = [{"values": {"Task": "Test task"}}]
+    mock_columns = [{"name": "Task", "type": "text", "id": "c-task-123"}]
+    mock_rows = [{"values": {"c-task-123": "Test task"}}]
     
     with patch('common.pycoda.Pycoda.list_columns') as mock_list_columns, \
          patch('common.pycoda.Pycoda.list_rows') as mock_list_rows, \
@@ -103,14 +103,14 @@ def test_export_to_file_and_unicode():
     try:
         # Mock Unicode data to test international character support
         unicode_columns = [
-            {"name": "项目", "type": "text"},      # Project (Chinese)
-            {"name": "状态", "type": "select"},    # Status (Chinese) 
-            {"name": "Müller", "type": "person"}  # German name with umlaut
+            {"name": "项目", "type": "text", "id": "c-project-123"},      # Project (Chinese)
+            {"name": "状态", "type": "select", "id": "c-status-456"},    # Status (Chinese) 
+            {"name": "Müller", "type": "person", "id": "c-person-789"}  # German name with umlaut
         ]
         
         unicode_rows = [
-            {"values": {"项目": "测试项目", "状态": "进行中", "Müller": "José García"}},  # Mixed languages
-            {"values": {"项目": "Production", "状态": "完成", "Müller": "François"}}
+            {"values": {"c-project-123": "测试项目", "c-status-456": "进行中", "c-person-789": "José García"}},  # Mixed languages
+            {"values": {"c-project-123": "Production", "c-status-456": "完成", "c-person-789": "François"}}
         ]
         
         with patch('common.pycoda.Pycoda.list_columns') as mock_list_columns, \
@@ -168,21 +168,21 @@ def test_export_csv_special_characters():
     """
     # Mock data with special characters that challenge CSV formatting
     special_columns = [
-        {"name": "Description", "type": "text"},
-        {"name": "Notes", "type": "text"},
-        {"name": "Empty", "type": "text"}
+        {"name": "Description", "type": "text", "id": "c-desc-123"},
+        {"name": "Notes", "type": "text", "id": "c-notes-456"},
+        {"name": "Empty", "type": "text", "id": "c-empty-789"}
     ]
     
     special_rows = [
         {"values": {
-            "Description": "Task with, comma",
-            "Notes": 'Text with "quotes"',
-            "Empty": ""
+            "c-desc-123": "Task with, comma",
+            "c-notes-456": 'Text with "quotes"',
+            "c-empty-789": ""
         }},
         {"values": {
-            "Description": "Text with\nnewline",
-            "Notes": "Normal text",
-            "Empty": None  # Test None handling
+            "c-desc-123": "Text with\nnewline",
+            "c-notes-456": "Normal text",
+            "c-empty-789": None  # Test None handling
         }}
     ]
     
@@ -249,14 +249,14 @@ def test_export_table_with_template_name():
     """
     # Mock API responses with expected data structure
     mock_columns = [
-        {"name": "Task", "type": "text"},
-        {"name": "Owner", "type": "person"},
-        {"name": "Priority", "type": "select"}
+        {"name": "Task", "type": "text", "id": "c-task-123"},
+        {"name": "Owner", "type": "person", "id": "c-owner-456"},
+        {"name": "Priority", "type": "select", "id": "c-priority-789"}
     ]
     
     mock_rows = [
-        {"values": {"Task": "Setup project", "Owner": "John Doe", "Priority": "High"}},
-        {"values": {"Task": "Define scope", "Owner": "Jane Smith", "Priority": "Medium"}}
+        {"values": {"c-task-123": "Setup project", "c-owner-456": "John Doe", "c-priority-789": "High"}},
+        {"values": {"c-task-123": "Define scope", "c-owner-456": "Jane Smith", "c-priority-789": "Medium"}}
     ]
     
     # Mock both the template registry and API calls
