@@ -2,6 +2,7 @@
 DocumentCreator module for Interactive Document Builder
 Minimal implementation following TDD approach
 """
+import json
 
 
 class DocumentCreator:
@@ -69,7 +70,7 @@ class DocumentCreator:
         document_info = template["document"]
         
         # Create the document
-        doc_result = self.pycoda.create_document(document_info["name"])
+        doc_result = json.loads(self.pycoda.create_document(document_info["name"]))
         document_id = doc_result["id"]
         
         # Add sections to the document

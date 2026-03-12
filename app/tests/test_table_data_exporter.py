@@ -7,6 +7,9 @@ from unittest.mock import patch
 
 
 def test_export_table_basic():
+    # plumb:req-966caad2
+    # plumb:req-4ca9f546
+    # plumb:req-8e04a330
     """Test basic CSV export functionality
     
     This test validates the core business requirement: export table data as CSV via CLI.
@@ -40,6 +43,7 @@ def test_export_table_basic():
 
 
 def test_export_table_invalid_ids():
+    # plumb:req-5e729c51
     """Test error handling for invalid document/table IDs
     
     This test ensures that invalid IDs result in meaningful error messages
@@ -61,6 +65,7 @@ def test_export_table_invalid_ids():
 
 
 def test_export_table_file_permission_error():
+    # plumb:req-9fdf8052
     """Test error handling for file permission errors
     
     This test ensures that file permission issues are handled gracefully
@@ -90,6 +95,8 @@ def test_export_table_file_permission_error():
 
 
 def test_export_to_file_and_unicode():
+    # plumb:req-55c0ff2f
+    # plumb:req-9070faec
     """Test file output functionality and Unicode character handling
     
     This test ensures that:
@@ -158,6 +165,7 @@ def test_export_to_file_and_unicode():
 
 
 def test_export_csv_special_characters():
+    # plumb:req-876c42a9
     """Test CSV handling of special characters that need escaping
     
     This test ensures proper CSV escaping for:
@@ -241,6 +249,7 @@ def test_export_csv_special_characters():
         assert data_row_2[2] == ""  # None converted to empty string
 
 def test_export_table_with_template_name():
+    # plumb:req-76e2f647
     """Test export-table command with template name instead of document ID
     
     This test validates the business requirement: users should be able to use

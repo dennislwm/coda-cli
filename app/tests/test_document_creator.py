@@ -23,6 +23,7 @@ class TestDocumentCreator:
         assert creator.pycoda is mock_pycoda
 
     def test_substitute_variables_in_simple_string(self):
+        # plumb:req-b6a40203
         """DocumentCreator should replace {{VARIABLE}} patterns in strings"""
         # Arrange
         mock_pycoda = Mock(spec=Pycoda)
@@ -37,6 +38,7 @@ class TestDocumentCreator:
         assert result == "Project: Test Project, Status: Active"
 
     def test_substitute_variables_in_dictionary(self):
+        # plumb:req-ec1df484
         """DocumentCreator should replace {{VARIABLE}} patterns in nested dictionary structures"""
         # Arrange
         mock_pycoda = Mock(spec=Pycoda)
@@ -103,11 +105,12 @@ document:
             os.unlink(temp_file_path)
 
     def test_create_document_from_template(self):
+        # plumb:req-4a71343a
         """DocumentCreator should create Coda documents from processed templates"""
         # Arrange
         mock_pycoda = Mock(spec=Pycoda)
-        mock_pycoda.create_document.return_value = {"id": "doc123", "name": "Test Project Dashboard"}
-        mock_pycoda.add_section.return_value = {"id": "section456"}
+        mock_pycoda.create_document.return_value = '{"id": "doc123", "name": "Test Project Dashboard"}'
+        mock_pycoda.add_section.return_value = '{"id": "section456"}'
         
         creator = DocumentCreator(mock_pycoda)
         

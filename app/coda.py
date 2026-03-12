@@ -112,6 +112,16 @@ class Coda(object):
     result = self.objCoda.list_rows(strDocId, strTableId)
     print ( result )
 
+  def update_row(self, strDocId, strTableId, strRowId, dictCells):
+    strDocId = self.resolve_doc_id(strDocId)
+    result = self.objCoda.update_row(strDocId, strTableId, strRowId, dictCells)
+    print(result)
+
+  def upsert_row(self, strDocId, strTableId, dictCells, lstKeyColumns=None):
+    strDocId = self.resolve_doc_id(strDocId)
+    result = self.objCoda.upsert_row(strDocId, strTableId, dictCells, lstKeyColumns)
+    print(result)
+
   def export_template(self, strDocId, strOutputFile=None):
     """Export document as YAML template using TemplateExporter"""
     strDocId = self.resolve_doc_id(strDocId)
@@ -324,6 +334,39 @@ def list_columns(objCoda, doc, table):
 def list_rows(objCoda, doc, table):
   """ Returns the list of rows in a table """
   objCoda.list_rows(doc, table)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                           U P D A T E _ R O W   C O M M A N D                            |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.option('--table', required=True)
+@click.option('--row', required=True, help='Row ID')
+@click.option('--cells', required=True, help='Comma-separated col-id=value pairs')
+@click.pass_obj
+#---------
+# Function
+def update_row(objCoda, doc, table, row, cells):
+  """ Updates an existing row in a table """
+  dictCells = dict(pair.split('=', 1) for pair in cells.split(','))
+  objCoda.update_row(doc, table, row, dictCells)
+
+"""--------+---------+---------+---------+---------+---------+---------+---------+---------|
+|                           U P S E R T _ R O W   C O M M A N D                            |
+|----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+@clickMain.command()
+@click.option('--doc', required=True)
+@click.option('--table', required=True)
+@click.option('--cells', required=True, help='Comma-separated col-id=value pairs')
+@click.option('--key-columns', help='Comma-separated column IDs to match on (optional)')
+@click.pass_obj
+#---------
+# Function
+def upsert_row(objCoda, doc, table, cells, key_columns):
+  """ Inserts or updates a row in a table """
+  dictCells = dict(pair.split('=', 1) for pair in cells.split(','))
+  lstKeyColumns = key_columns.split(',') if key_columns else None
+  objCoda.upsert_row(doc, table, dictCells, lstKeyColumns)
 
 """--------+---------+---------+---------+---------+---------+---------+---------+---------|
 |                            G E T _ C O L U M N   C O M M A N D                           |

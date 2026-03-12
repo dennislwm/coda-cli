@@ -139,14 +139,37 @@ class Pycoda():
       return "{}"
     return json.dumps(val)
 
+  def update_row(self, strDocId, strTableId, strRowId, dictCells):
+    """ Updates an existing row in TableId """
+    assert(strDocId)
+    assert(strTableId)
+    assert(strRowId)
+    assert(dictCells)
+    try:
+      result = self.coda.update_row(strDocId, strTableId, strRowId, dictCells)
+      return json.dumps(result)
+    except Exception as e:
+      return json.dumps({"error": str(e)})
+
+  def upsert_row(self, strDocId, strTableId, dictCells, lstKeyColumns=None):
+    """ Inserts or updates a row in TableId matched by key columns """
+    assert(strDocId)
+    assert(strTableId)
+    assert(dictCells)
+    try:
+      result = self.coda.upsert_row(strDocId, strTableId, dictCells, key_columns=lstKeyColumns)
+      return json.dumps(result)
+    except Exception as e:
+      return json.dumps({"error": str(e)})
+
   def create_document(self, name):
     """ Create a new document """
     assert(name)
     try:
       result = self.coda.create_doc(name)
-      return {"id": result["id"], "name": result["name"]}
+      return json.dumps({"id": result["id"], "name": result["name"]})
     except Exception as e:
-      return {"error": str(e)}
+      return json.dumps({"error": str(e)})
 
   def add_section(self, doc_id, section_name, section_type, content):
     """ Add a section to a document """
@@ -160,9 +183,9 @@ class Pycoda():
       else:
         # For other section types, create section without content for now
         result = self.coda.create_section(doc_id, section_name)
-      return {"id": result["id"], "name": result["name"]}
+      return json.dumps({"id": result["id"], "name": result["name"]})
     except Exception as e:
-      return {"error": str(e)}
+      return json.dumps({"error": str(e)})
 
   """--------+---------+---------+---------+---------+---------+---------+---------+---------|
   |                                 C L A S S   M E T H O D S                                |

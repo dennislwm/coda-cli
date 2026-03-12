@@ -64,6 +64,7 @@ def test_basic_cli_commands(runner, command, expected_output):
         assert expected_output in result.output
 
 def test_export_template(runner, temp_yaml_file):
+    # plumb:req-596d4d09
     """Test export-template CLI command functionality."""
     # Test basic export without output file
     result = runner.invoke(clickMain, ['export-template', '--doc', strTestDoc])
@@ -80,6 +81,7 @@ def test_export_template(runner, temp_yaml_file):
         _assert_yaml_structure(f.read())
 
 def test_import_template_cli_command(runner, temp_yaml_file):
+    # plumb:req-4a71343a
     """Test import-template CLI functionality and error handling."""
     # Basic import functionality
     result = runner.invoke(clickMain, ['import-template', '--file', temp_yaml_file])
@@ -102,6 +104,10 @@ def test_import_template_cli_command(runner, temp_yaml_file):
     assert "Error" in result.output
 
 def test_template_management_workflow(runner):
+    # plumb:req-795973cd
+    # plumb:req-c38e6053
+    # plumb:req-4371a5c9
+    # plumb:req-b7b29744
     """Test complete template registry workflow with error handling."""
     template_name = 'test-workflow-template'
     

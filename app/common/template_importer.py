@@ -1,6 +1,7 @@
 """
 TemplateImporter: Efficient YAML template parsing and variable substitution
 """
+import json
 import yaml
 import re
 
@@ -54,8 +55,8 @@ class TemplateImporter:
             document_name = template_structure["document"]["name"]
             
             # Step 4: Create the document using Pycoda client
-            result = pycoda_client.create_document(document_name)
-            
+            result = json.loads(pycoda_client.create_document(document_name))
+
             # Step 5: Check for errors in document creation
             if "error" in result:
                 raise ValueError(f"Document creation failed: {result['error']}")

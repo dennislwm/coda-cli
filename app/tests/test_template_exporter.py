@@ -132,7 +132,7 @@ class TestTemplateExporter:
         
         # API failure handling
         valid_yaml = "document:\n  name: 'Test Project'\n  sections: []"
-        mock_pycoda.create_document.return_value = {"error": "API rate limit exceeded"}
+        mock_pycoda.create_document.return_value = '{"error": "API rate limit exceeded"}'
         
         with pytest.raises(ValueError) as exc_info:
             importer.create_document_from_template(valid_yaml, {}, mock_pycoda)

@@ -10,6 +10,7 @@ class TestTemplateRegistry:
     """Test cases for TemplateRegistry class"""
 
     def test_core_operations_with_persistence(self):
+        # plumb:req-b7b29744
         """Test CRUD operations and persistence across CLI sessions
         
         Validates core business requirement: templates persist between CLI sessions
@@ -43,6 +44,8 @@ class TestTemplateRegistry:
                 os.unlink(registry_file)
 
     def test_error_handling_and_recovery(self):
+        # plumb:req-88f1e028
+        # plumb:req-dede5be6
         """Test input validation, corrupted file recovery, and error handling
         
         Validates production reliability: system handles errors gracefully
