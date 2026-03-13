@@ -68,31 +68,29 @@ The application follows a consistent pattern where:
 - Requirements generated dynamically with pipreqs
 - Environment variables passed via --env-file .env
 
-<!-- plumb:start -->
-## Plumb (Spec/Test/Code Sync)
+## Plumber (Spec/Test/Code Sync)
 
-This project uses Plumb to keep the spec, tests, and code in sync.
+This project uses Plumber to keep the spec, tests, and code in sync.
 
 - **Spec:** doc/spec.md
-- **Tests:** tests/
-- **Decision log:** `.plumb/decisions/`
+- **Tests:** app/tests/
+- **Decision log:** `.plumb/decisions.jsonl`
 
 ### When working in this project:
 
-- Source `app/.env` once at the start of the session (`set -a && source app/.env && set +a`) before running any plumb command.
-- Run `plumb status` before beginning work to understand current alignment.
-- Run `plumb diff` before committing to preview what Plumb will capture.
-- When `git commit` is intercepted by Plumb, **use `AskUserQuestion`** to present
+- Source `app/.env` once at the start of the session (`set -a && source app/.env && set +a`) before running any plumber command.
+- Run `plumber status` before beginning work to understand current alignment.
+- Run `plumber diff` before committing to preview what Plumber will capture.
+- When `git commit` is intercepted by Plumber, **use `AskUserQuestion`** to present
   each pending decision via the native multiple-choice UI. Options: Approve,
-  Ignore, Reject. Then run the corresponding `plumb` command.
+  Approve with edits, Ignore, Reject. Then run the corresponding `plumber` command.
   **NEVER approve, reject, or edit decisions on the user's behalf.** This is
   non-negotiable.
-- After all decisions are resolved, run `plumb sync` to update the spec and
+- After all decisions are resolved, run `plumber sync` to update the spec and
   generate tests. Stage the sync output, then re-run `git commit`. Draft the
   commit message **after** decision review and include a list of approved
   decisions.
-- Use `plumb coverage` to identify what needs to be implemented or tested next.
-- Never edit files in `.plumb/decisions/` directly.
+- Use `plumber coverage` to identify what needs to be implemented or tested next.
+- Never edit `.plumb/decisions.jsonl` directly — use `plumber` subcommands.
 - Treat the spec markdown files as the source of truth for intended behavior.
-  Plumb will keep them updated as decisions are approved.
-<!-- plumb:end -->
+  Plumber will keep them updated as decisions are approved.

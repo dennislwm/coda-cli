@@ -61,6 +61,11 @@
 - Template names can be used in place of document IDs in commands that accept a document ID.
 - Commands that accept a document ID also accept a Coda browser URL, resolving it to a document ID automatically.
 - New rules are added to require checks on the requirement count before running `plumb parse-spec`.
+## Authentication
+- The `verify-auth` command confirms the configured API key is valid by calling the Coda `/whoami` endpoint.
+- The `verify-auth` command prints the authenticated account information as JSON on success.
+- The `verify-auth` command returns an error when the API key is invalid or missing.
+
 ## JSON Utilities
 - The `JsonFile` class reads and writes JSON data to and from the filesystem.
 - The `JsonPlan` class manages structured plan data in JSON format.

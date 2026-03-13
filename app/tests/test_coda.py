@@ -1,5 +1,6 @@
 from coda import clickMain
 from click.testing import CliRunner
+import json
 import tempfile
 import os
 import pytest
@@ -165,3 +166,11 @@ def test_list_templates_empty_registry(runner):
     result = runner.invoke(clickMain, ['list-templates'])
     assert result.exit_code == 0
     assert any(text in result.output for text in ["No templates registered", "Registered Templates:"])
+
+def test_verify_auth(runner):
+    """The verify-auth command confirms the configured API key is valid by calling the Coda /whoami endpoint."""
+    result = runner.invoke(clickMain, ['verify-auth'])
+    assert result.exit_code == 0
+    data = json.loads(result.output.strip())
+    assert "error" not in data
+    assert any(k in data for k in ("loginId", "name", "type"))
