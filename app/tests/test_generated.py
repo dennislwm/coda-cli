@@ -224,33 +224,6 @@ def test_req_f79974ff_export_table_template_name():
     assert result['template_id'] == "expected-document-id"  # Check if template name resolves correctly
 
 
-def test_req_1be0fe7b_upsert_row(tmp_path):
-    # plumb:req-1be0fe7b
-    from my_module import upsert_row
-    
-    document_id = "doc-1"
-    table_id = "table-1"
-    cell_values = {"column1": "value1", "column2": "value2"}
-    
-    result = upsert_row(document_id, table_id, cell_values)
-    
-    assert result == "Row inserted/updated successfully!"  # Adjust based on actual return value/behavior
-
-
-def test_req_6a2b853a_update_row(tmp_path):
-    # plumb:req-6a2b853a
-    from my_module import update_row
-    
-    document_id = "doc-1"
-    table_id = "table-1"
-    row_id = "row-1"
-    cell_values = {"column1": "new_value"}
-    
-    result = update_row(document_id, table_id, row_id, cell_values)
-    
-    assert result == "Row updated successfully!"  # Adjust based on actual return value/behavior
-
-
 def test_req_a5909c7f_guardrails_for_deletion(tmp_path):
     # plumb:req-a5909c7f
     from my_module import delete_row

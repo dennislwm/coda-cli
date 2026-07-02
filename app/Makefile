@@ -48,6 +48,9 @@ shell_clean:
 test:
 	PYTHONPATH=. pytest
 
+test_fast:
+	PYTHONPATH=. pytest -m "not live"
+
 test_verbose:
 	PYTHONPATH=. pytest -v -s
 

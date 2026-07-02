@@ -138,7 +138,9 @@ class Pycoda():
     assert(strRowId)
     assert(dictCells)
     try:
-      result = self.coda.update_row(strDocId, strTableId, strRowId, dictCells)
+      cells = [{"column": k, "value": v} for k, v in dictCells.items()]
+      data = {"row": {"cells": cells}}
+      result = self.coda.update_row(strDocId, strTableId, strRowId, data)
       return json.dumps(result)
     except Exception as e:
       return json.dumps({"error": str(e)})
@@ -149,7 +151,11 @@ class Pycoda():
     assert(strTableId)
     assert(dictCells)
     try:
-      result = self.coda.upsert_row(strDocId, strTableId, dictCells, key_columns=lstKeyColumns)
+      cells = [{"column": k, "value": v} for k, v in dictCells.items()]
+      data = {"rows": [{"cells": cells}]}
+      if lstKeyColumns:
+        data["keyColumns"] = lstKeyColumns
+      result = self.coda.upsert_row(strDocId, strTableId, data)
       return json.dumps(result)
     except Exception as e:
       return json.dumps({"error": str(e)})

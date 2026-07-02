@@ -57,6 +57,7 @@ def _assert_yaml_structure(content):
     (['list-columns', '--doc', strDoc, '--table', strTable], "col"),
     (['list-rows', '--doc', strDoc, '--table', strTable], "row"),
 ])
+@pytest.mark.live
 def test_basic_cli_commands(runner, command, expected_output):
     """Test basic CLI commands for successful execution and expected output patterns."""
     result = runner.invoke(clickMain, command)
@@ -64,6 +65,7 @@ def test_basic_cli_commands(runner, command, expected_output):
     if expected_output:
         assert expected_output in result.output
 
+@pytest.mark.live
 def test_export_template(runner, temp_yaml_file):
     # plumb:req-596d4d09
     """Test export-template CLI command functionality."""
@@ -81,6 +83,7 @@ def test_export_template(runner, temp_yaml_file):
     with open(temp_yaml_file, 'r') as f:
         _assert_yaml_structure(f.read())
 
+@pytest.mark.live
 def test_import_template_cli_command(runner, temp_yaml_file):
     # plumb:req-4a71343a
     """Test import-template CLI functionality and error handling."""
@@ -167,6 +170,7 @@ def test_list_templates_empty_registry(runner):
     assert result.exit_code == 0
     assert any(text in result.output for text in ["No templates registered", "Registered Templates:"])
 
+@pytest.mark.live
 def test_verify_auth(runner):
     """The verify-auth command confirms the configured API key is valid by calling the Coda /whoami endpoint."""
     result = runner.invoke(clickMain, ['verify-auth'])
@@ -174,3 +178,34 @@ def test_verify_auth(runner):
     data = json.loads(result.output.strip())
     assert "error" not in data
     assert any(k in data for k in ("loginId", "name", "type"))
+
+def test_update_row_wraps_cells(monkeypatch):
+    """REQ-009 regression: update_row must send codaio's {"row": {"cells": [...]}} shape, not a flat dict."""
+    from common.pycoda import Pycoda
+    obj = Pycoda('fake-key')
+    captured = {}
+    def fake_update_row(doc_id, table_id, row_id, data):
+        captured['data'] = data
+        return {"id": row_id}
+    monkeypatch.setattr(obj.coda, 'update_row', fake_update_row)
+
+    obj.update_row('doc1', 'table1', 'row1', {'c-abc': 'val'})
+
+    assert captured['data'] == {"row": {"cells": [{"column": "c-abc", "value": "val"}]}}
+
+def test_upsert_row_wraps_cells(monkeypatch):
+    """REQ-009: upsert_row sends codaio's {"rows": [{"cells": [...]}], "keyColumns": [...]} shape."""
+    from common.pycoda import Pycoda
+    obj = Pycoda('fake-key')
+    captured = {}
+    def fake_upsert_row(doc_id, table_id, data):
+        captured['data'] = data
+        return {"requestId": "abc"}
+    monkeypatch.setattr(obj.coda, 'upsert_row', fake_upsert_row)
+
+    obj.upsert_row('doc1', 'table1', {'c-abc': 'val'}, lstKeyColumns=['c-abc'])
+
+    assert captured['data'] == {
+        "rows": [{"cells": [{"column": "c-abc", "value": "val"}]}],
+        "keyColumns": ['c-abc'],
+    }
