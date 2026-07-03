@@ -26,6 +26,18 @@ class Coda(object):
       pass
     return strDocId
 
+  def resolve_table_id(self, strDocId, strTableId):
+    """Resolve table name to table ID if registered under the doc, otherwise return original ID"""
+    try:
+      from common.template_registry import TemplateRegistry
+      registry = TemplateRegistry()
+      strTableName = registry.get_table_id(strDocId, strTableId)
+      if strTableName is not None:
+        return strTableName
+    except Exception:
+      pass
+    return strTableId
+
   # --- commands ---
 
   def verify_auth(self):
@@ -116,6 +128,7 @@ class Coda(object):
   def export_table(self, strDocId, strTableId, strOutputFile=None):
     """Export table data as CSV with comprehensive error handling"""
     from common.table_data_exporter import TableDataExporter
+    strTableId = self.resolve_table_id(strDocId, strTableId)
     strDocId = self.resolve_doc_id(strDocId)
     exporter = TableDataExporter(self.objCoda)
     exporter.export_with_cli_output(strDocId, strTableId, strOutputFile)

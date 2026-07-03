@@ -1,5 +1,6 @@
 """Test cases for TemplateRegistry functionality"""
 
+import json
 import tempfile
 import os
 import pytest
@@ -89,8 +90,39 @@ class TestTemplateRegistry:
         """Test backward compatibility with existing methods"""
         registry = TemplateRegistry()
         registry.register_template("test", "doc123")
-        
+
         # Legacy methods should continue working
         assert registry.get_template_doc_id("test") == "doc123"
         assert registry.is_template_registered("test") == True
         assert registry.is_template_registered("nonexistent") == False
+
+    def test_nested_registry_entries(self):
+        """Nested {id, tables} entries (ADR-06) resolve doc and table IDs without breaking flat entries"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp:
+            json.dump({
+                "PokemonLeesarebest": {"id": "-vNHwSh0wi", "tables": {"Cards": "grid-abc123"}},
+                "flat-doc": "doc123",
+            }, tmp)
+            registry_file = tmp.name
+
+        try:
+            registry = TemplateRegistry(registry_file)
+
+            # Nested entry: doc ID resolves via get_template and legacy get_template_doc_id
+            assert registry.get_template("PokemonLeesarebest") == "-vNHwSh0wi"
+            assert registry.get_template_doc_id("PokemonLeesarebest") == "-vNHwSh0wi"
+
+            # Nested entry: table ID resolves via get_table_id
+            assert registry.get_table_id("PokemonLeesarebest", "Cards") == "grid-abc123"
+            assert registry.get_table_id("PokemonLeesarebest", "nonexistent") is None
+
+            # Flat entry unaffected, has no tables
+            assert registry.get_template("flat-doc") == "doc123"
+            assert registry.get_table_id("flat-doc", "anything") is None
+
+            # Unregistered doc
+            assert registry.get_table_id("nonexistent", "Cards") is None
+
+        finally:
+            if os.path.exists(registry_file):
+                os.unlink(registry_file)

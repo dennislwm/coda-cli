@@ -56,7 +56,7 @@ class TemplateRegistry:
         assert(name)
         if name not in self._templates:
             raise TemplateNotFoundError(name)
-        return self._templates[name]
+        return self._resolve_id(self._templates[name])
 
     def is_template_registered(self, name):
         """Check if template is registered by name (legacy method)"""
@@ -65,15 +65,31 @@ class TemplateRegistry:
     
     def get_template(self, name: str) -> Optional[str]:
         """Retrieve document ID for registered template by name
-        
+
         Args:
             name: Template name to look up
-            
+
         Returns:
             str: Document ID if template exists, None otherwise
         """
-        return self._templates.get(name.strip()) if name.strip() else None
-    
+        entry = self._templates.get(name.strip()) if name.strip() else None
+        return self._resolve_id(entry) if entry is not None else None
+
+    def get_table_id(self, doc_name: str, table_name: str) -> Optional[str]:
+        """Retrieve table ID for a registered doc/table pair (nested registry entries only)
+
+        Args:
+            doc_name: Registered document name
+            table_name: Table name within that document
+
+        Returns:
+            str: Table ID if found, None otherwise
+        """
+        entry = self._templates.get(doc_name.strip()) if doc_name.strip() else None
+        if not isinstance(entry, dict):
+            return None
+        return entry.get("tables", {}).get(table_name.strip()) if table_name.strip() else None
+
     def list_templates(self) -> Dict[str, str]:
         """List all registered templates
         
@@ -159,6 +175,10 @@ class TemplateRegistry:
     """--------+---------+---------+---------+---------+---------+---------+---------+---------|
     |                                P R I V A T E   M E T H O D S                              |
     |----------+---------+---------+---------+---------+---------+---------+---------+-------"""
+    def _resolve_id(self, entry):
+        """Unwrap a registry entry to its doc ID, whether flat (str) or nested ({id, tables})"""
+        return entry["id"] if isinstance(entry, dict) else entry
+
     def _load_templates(self) -> Dict[str, str]:
         """Load templates from JSON file with simple error recovery"""
         try:
@@ -169,9 +189,11 @@ class TemplateRegistry:
             with open(self.registry_file, 'r') as f:
                 data = json.load(f)
                 if isinstance(data, dict):
-                    return {k.strip(): v.strip() for k, v in data.items() 
-                           if isinstance(k, str) and isinstance(v, str) 
-                           and k.strip() and v.strip()}
+                    return {k.strip(): (v.strip() if isinstance(v, str) else v)
+                           for k, v in data.items()
+                           if isinstance(k, str) and k.strip()
+                           and ((isinstance(v, str) and v.strip())
+                                or (isinstance(v, dict) and isinstance(v.get("id"), str) and v["id"].strip()))}
         except (json.JSONDecodeError, IOError):
             pass
         

@@ -8,6 +8,8 @@ import pytest
 strDoc = 'QlIwnjdg3j'
 strTable = 'table-6JxYP9k3MA'
 strTestDoc = '-vNHwSh0wi'
+strSection = 'canvas-sVqFf3FEmk'
+strColumn = 'c-7A8kI21s5R'
 
 @pytest.fixture
 def runner():
@@ -56,6 +58,9 @@ def _assert_yaml_structure(content):
     (['list-views', '--doc', strDoc], "view"),
     (['list-columns', '--doc', strDoc, '--table', strTable], "col"),
     (['list-rows', '--doc', strDoc, '--table', strTable], "row"),
+    (['get-doc', '--doc', strDoc], '"type": "doc"'),
+    (['get-section', '--doc', strDoc, '--section', strSection], '"type": "page"'),
+    (['get-column', '--doc', strDoc, '--table', strTable, '--column', strColumn], '"type": "column"'),
 ])
 @pytest.mark.live
 def test_basic_cli_commands(runner, command, expected_output):
@@ -178,6 +183,23 @@ def test_verify_auth(runner):
     data = json.loads(result.output.strip())
     assert "error" not in data
     assert any(k in data for k in ("loginId", "name", "type"))
+
+def test_api_key_from_env_var(monkeypatch, tmp_path):
+    """REQ-003: API key loads from CODA_API_KEY env var when no config.json is present."""
+    from coda import Coda
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('CODA_API_KEY', 'test_env_key')
+    obj = Coda('text')
+    assert obj.API_KEY == 'test_env_key'
+
+def test_api_key_from_config_file_overrides_env(monkeypatch, tmp_path):
+    """REQ-003: config.json's CODA_API_KEY overrides the env var."""
+    from coda import Coda
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('CODA_API_KEY', 'env_key')
+    (tmp_path / 'config.json').write_text(json.dumps({'CODA_API_KEY': 'config_key'}))
+    obj = Coda('text')
+    assert obj.API_KEY == 'config_key'
 
 def test_update_row_wraps_cells(monkeypatch):
     """REQ-009 regression: update_row must send codaio's {"row": {"cells": [...]}} shape, not a flat dict."""

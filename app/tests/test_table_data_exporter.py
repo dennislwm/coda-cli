@@ -277,6 +277,7 @@ def test_export_table_with_template_name():
         mock_registry = mock_registry_class.return_value
         mock_registry.get_template_doc_id.return_value = "test-doc-123"
         mock_registry.is_template_registered.return_value = True
+        mock_registry.get_table_id.return_value = None
         
         # Setup API mocks 
         mock_list_columns.return_value = json.dumps(mock_columns)
@@ -291,14 +292,52 @@ def test_export_table_with_template_name():
         assert result.exit_code == 0
         
         # Verify template registry was used to resolve name
-        mock_registry_class.assert_called_once()
+        # (called once by resolve_table_id, once by resolve_doc_id)
+        mock_registry_class.assert_called()
         mock_registry.get_template_doc_id.assert_called_once_with('project-kickoff')
         
         # Verify API was called with resolved document ID
         mock_list_columns.assert_called_once_with('test-doc-123', 'test-table-id')
         mock_list_rows.assert_called_once_with('test-doc-123', 'test-table-id')
-        
+
         # Verify expected CSV output
         assert 'Task,Owner,Priority' in result.output  # Expected CSV headers
         assert 'Setup project,John Doe,High' in result.output  # Expected CSV data
         assert 'Define scope,Jane Smith,Medium' in result.output  # Expected CSV data
+
+def test_export_table_with_nested_template_name():
+    # REQ-013
+    """Test export-table command with nested registry: both doc and table names resolve
+
+    Validates ADR-06: --doc PokemonLeesarebest --table Cards resolves both
+    to their registered IDs before the API is called.
+    """
+    mock_columns = [{"name": "Task", "type": "text", "id": "c-task-123"}]
+    mock_rows = [{"values": {"c-task-123": "Setup project"}}]
+
+    with patch('common.template_registry.TemplateRegistry') as mock_registry_class, \
+         patch('common.pycoda.Pycoda.list_columns') as mock_list_columns, \
+         patch('common.pycoda.Pycoda.list_rows') as mock_list_rows:
+
+        mock_registry = mock_registry_class.return_value
+        mock_registry.get_table_id.return_value = "grid-abc123"
+        mock_registry.get_template_doc_id.return_value = "-vNHwSh0wi"
+        mock_registry.is_template_registered.return_value = True
+
+        mock_list_columns.return_value = json.dumps(mock_columns)
+        mock_list_rows.return_value = json.dumps(mock_rows)
+
+        runner = CliRunner()
+        result = runner.invoke(clickMain, [
+            'export-table', '--doc', 'PokemonLeesarebest', '--table', 'Cards'
+        ])
+
+        assert result.exit_code == 0
+
+        # Table resolved against the original doc name, before doc ID resolution
+        mock_registry.get_table_id.assert_called_once_with('PokemonLeesarebest', 'Cards')
+        mock_registry.get_template_doc_id.assert_called_once_with('PokemonLeesarebest')
+
+        # API called with both resolved IDs
+        mock_list_columns.assert_called_once_with('-vNHwSh0wi', 'grid-abc123')
+        mock_list_rows.assert_called_once_with('-vNHwSh0wi', 'grid-abc123')

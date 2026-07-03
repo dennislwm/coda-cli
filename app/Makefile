@@ -46,13 +46,13 @@ shell_clean:
 	pipenv --rm
 
 test:
-	PYTHONPATH=. pytest
+	PYTHONPATH=. pipenv run pytest
 
 test_fast:
-	PYTHONPATH=. pytest -m "not live"
+	PYTHONPATH=. pipenv run pytest -m "not live"
 
 test_verbose:
-	PYTHONPATH=. pytest -v -s
+	PYTHONPATH=. pipenv run pytest -v -s
 
 # CLI command targets (require valid CODA_API_KEY and parameters)
 help:
