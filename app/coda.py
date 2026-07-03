@@ -94,11 +94,13 @@ class Coda(object):
     print(result)
 
   def list_columns(self, strDocId, strTableId):
+    strTableId = self.resolve_table_id(strDocId, strTableId)
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_columns(strDocId, strTableId)
     print(result)
 
   def list_rows(self, strDocId, strTableId):
+    strTableId = self.resolve_table_id(strDocId, strTableId)
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_rows(strDocId, strTableId)
     print(result)
@@ -142,6 +144,18 @@ class Coda(object):
     """List all registered templates"""
     registry = TemplateRegistry()
     registry.list_templates_cli()
+
+  def sync(self):
+    """Sync all docs and tables from the Coda account into the registry as nested entries (REQ-013)"""
+    registry = TemplateRegistry()
+    docs = self.objCoda.list_docs_raw()
+    synced_names = set()
+    for doc in docs:
+      tables = {t["name"]: t["id"] for t in self.objCoda.list_tables_raw(doc["id"])}
+      registry.register_doc(doc["name"], doc["id"], tables)
+      synced_names.add(doc["name"])
+    pruned = registry.prune_synced(synced_names)
+    print(f"Synced {len(docs)} docs" + (f", pruned {pruned} stale" if pruned else ""))
 
   def remove_template(self, strName):
     """Remove a template from the registry"""
@@ -349,6 +363,13 @@ def register_template(objCoda, name, doc, description):
 def list_templates(objCoda):
   """ List all registered templates """
   objCoda.list_templates()
+
+
+@clickMain.command()
+@click.pass_obj
+def sync(objCoda):
+  """ Sync all docs and tables from the Coda account into the registry """
+  objCoda.sync()
 
 
 @clickMain.command()

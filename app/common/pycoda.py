@@ -27,6 +27,10 @@ class Pycoda():
       return json.dumps({"error": str(e)})
     return self.json_items(list)
 
+  def list_docs_raw(self):
+    """ Returns the raw items list of documents, for programmatic use (e.g. sync) """
+    return self.coda.list_docs(is_owner=True)["items"]
+
   def list_controls(self, strDocId):
     """ Returns a list of controls in DocId """
     assert(strDocId)
@@ -71,6 +75,11 @@ class Pycoda():
     except Exception as e:
       return json.dumps({"error": str(e)})
     return self.json_items(list)
+
+  def list_tables_raw(self, strDocId):
+    """ Returns the raw items list of tables in DocId, for programmatic use (e.g. sync) """
+    assert(strDocId)
+    return self.coda.list_tables(strDocId)["items"]
 
   def list_views(self, strDocId):
     """ Returns a list of views in DocId """

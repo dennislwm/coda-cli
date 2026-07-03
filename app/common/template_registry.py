@@ -51,6 +51,41 @@ class TemplateRegistry:
         self._templates[name.strip()] = doc_id.strip()
         self._save_templates()
 
+    def register_doc(self, name: str, doc_id: str, tables: Dict[str, str]) -> None:
+        """Register a doc with its tables as a nested {id, tables} entry (ADR-06)
+
+        Args:
+            name: Document name (must be non-empty string)
+            doc_id: Document ID (must be non-empty string)
+            tables: Mapping of table name to table ID
+
+        Raises:
+            ValueError: If name or doc_id is empty/whitespace only
+        """
+        if not name.strip() or not doc_id.strip():
+            raise ValueError("Name and document ID cannot be empty")
+        self._templates[name.strip()] = {"id": doc_id.strip(), "tables": tables}
+        self._save_templates()
+
+    def prune_synced(self, current_names: set) -> int:
+        """Remove nested (sync-created) entries whose doc name is no longer present.
+
+        Never touches flat entries (manually registered via register_template),
+        only nested {id, tables} entries created by sync.
+
+        Args:
+            current_names: Doc names seen in the most recent sync run
+
+        Returns:
+            int: Number of stale entries removed
+        """
+        stale = [k for k, v in self._templates.items() if isinstance(v, dict) and k not in current_names]
+        for k in stale:
+            del self._templates[k]
+        if stale:
+            self._save_templates()
+        return len(stale)
+
     def get_template_doc_id(self, name):
         """Retrieve document ID for registered template by name (legacy method)"""
         assert(name)

@@ -1,5 +1,6 @@
 from coda import clickMain
 from click.testing import CliRunner
+from unittest.mock import patch
 import json
 import tempfile
 import os
@@ -88,25 +89,27 @@ def test_export_template(runner, temp_yaml_file):
     with open(temp_yaml_file, 'r') as f:
         _assert_yaml_structure(f.read())
 
-@pytest.mark.live
 def test_import_template_cli_command(runner, temp_yaml_file):
     # plumb:req-4a71343a
     """Test import-template CLI functionality and error handling."""
-    # Basic import functionality
-    result = runner.invoke(clickMain, ['import-template', '--file', temp_yaml_file])
-    assert result.exit_code == 0
-    assert "Document created successfully" in result.output
-    assert "ID=" in result.output
-    
-    # Import with variable substitution
-    result = runner.invoke(clickMain, [
-        'import-template', '--file', temp_yaml_file,
-        '--variables', 'DOC_NAME="My CLI Test Project"'
-    ])
-    assert result.exit_code == 0
-    assert "Document created successfully" in result.output
-    assert "My CLI Test Project" in result.output
-    
+    with patch('common.pycoda.Pycoda.create_document') as mock_create:
+        # Basic import functionality
+        mock_create.return_value = json.dumps({"id": "doc-abc123", "name": "{{DOC_NAME}}"})
+        result = runner.invoke(clickMain, ['import-template', '--file', temp_yaml_file])
+        assert result.exit_code == 0
+        assert "Document created successfully" in result.output
+        assert "ID=" in result.output
+
+        # Import with variable substitution
+        mock_create.return_value = json.dumps({"id": "doc-def456", "name": "My CLI Test Project"})
+        result = runner.invoke(clickMain, [
+            'import-template', '--file', temp_yaml_file,
+            '--variables', 'DOC_NAME="My CLI Test Project"'
+        ])
+        assert result.exit_code == 0
+        assert "Document created successfully" in result.output
+        assert "My CLI Test Project" in result.output
+
     # Error handling for missing file
     result = runner.invoke(clickMain, ['import-template', '--file', 'nonexistent.yaml'])
     assert result.exit_code != 0
@@ -174,6 +177,24 @@ def test_list_templates_empty_registry(runner):
     result = runner.invoke(clickMain, ['list-templates'])
     assert result.exit_code == 0
     assert any(text in result.output for text in ["No templates registered", "Registered Templates:"])
+
+def test_sync(runner):
+    """REQ-013: sync command upserts docs/tables into the registry and prunes stale entries"""
+    with patch('coda.TemplateRegistry') as mock_registry_class, \
+         patch('common.pycoda.Pycoda.list_docs_raw') as mock_docs, \
+         patch('common.pycoda.Pycoda.list_tables_raw') as mock_tables:
+
+        mock_registry = mock_registry_class.return_value
+        mock_docs.return_value = [{"id": "doc-1", "name": "MyDoc"}]
+        mock_tables.return_value = [{"id": "table-1", "name": "MyTable"}]
+        mock_registry.prune_synced.return_value = 2
+
+        result = runner.invoke(clickMain, ['sync'])
+
+        assert result.exit_code == 0
+        mock_registry.register_doc.assert_called_once_with("MyDoc", "doc-1", {"MyTable": "table-1"})
+        mock_registry.prune_synced.assert_called_once_with({"MyDoc"})
+        assert "Synced 1 docs, pruned 2 stale" in result.output
 
 @pytest.mark.live
 def test_verify_auth(runner):

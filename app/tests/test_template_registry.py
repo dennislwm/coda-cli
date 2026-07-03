@@ -126,3 +126,29 @@ class TestTemplateRegistry:
         finally:
             if os.path.exists(registry_file):
                 os.unlink(registry_file)
+
+    def test_prune_synced(self):
+        """prune_synced removes stale nested entries, keeps current nested and all flat entries"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as tmp:
+            json.dump({
+                "CurrentDoc": {"id": "doc-1", "tables": {}},
+                "DeletedDoc": {"id": "doc-2", "tables": {}},
+                "flat-alias": "doc-3",
+            }, tmp)
+            registry_file = tmp.name
+
+        try:
+            registry = TemplateRegistry(registry_file)
+
+            removed = registry.prune_synced({"CurrentDoc"})
+            assert removed == 1
+            assert registry.get_template("CurrentDoc") == "doc-1"
+            assert registry.get_template("DeletedDoc") is None
+            assert registry.get_template("flat-alias") == "doc-3"
+
+            # No-op: nothing left to prune
+            assert registry.prune_synced({"CurrentDoc"}) == 0
+
+        finally:
+            if os.path.exists(registry_file):
+                os.unlink(registry_file)
