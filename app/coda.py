@@ -157,6 +157,41 @@ class Coda(object):
     pruned = registry.prune_synced(synced_names)
     print(f"Synced {len(docs)} docs" + (f", pruned {pruned} stale" if pruned else ""))
 
+  def backup(self, strOutputDir, strDocName=None):
+    """Export every registered table to <output>/<date>/<doc>/<table>.csv, skipping empties (REQ-016/ADR-07)"""
+    from common.table_data_exporter import TableDataExporter
+    from common.template_registry import TemplateRegistry
+    from datetime import date
+    registry = TemplateRegistry()
+    exporter = TableDataExporter(self.objCoda)
+    strDateDir = os.path.join(strOutputDir, date.today().isoformat())
+    intDocs = intTables = intSkipped = 0
+    lstFailures = []
+    for strName, dictEntry in registry.list_templates().items():
+      if strDocName and strName != strDocName:
+        continue
+      if not isinstance(dictEntry, dict) or "tables" not in dictEntry:
+        continue  # skip flat/legacy entries -- only nested {id, tables} entries are backupable
+      for strTableName, strTableId in dictEntry["tables"].items():
+        try:
+          strCsv = exporter.export_table_csv(dictEntry["id"], strTableId)
+        except Exception as e:
+          # ponytail: a backup keeps capturing reachable tables; one failure never aborts the rest
+          lstFailures.append(f"{strName}/{strTableName}: {e}")
+          continue
+        if not strCsv.strip():
+          intSkipped += 1
+          continue
+        strPath = os.path.join(strDateDir, strName, strTableName + ".csv")
+        os.makedirs(os.path.dirname(strPath), exist_ok=True)
+        with open(strPath, "w", encoding="utf-8") as f:
+          f.write(strCsv)
+        intTables += 1
+      intDocs += 1
+    print(f"Backed up {intDocs} doc(s): {intTables} exported, {intSkipped} skipped, {len(lstFailures)} failed -> {strDateDir}")
+    if lstFailures:
+      raise click.ClickException("Backup incomplete:\n  " + "\n  ".join(lstFailures))
+
   def remove_template(self, strName):
     """Remove a template from the registry"""
     registry = TemplateRegistry()
@@ -370,6 +405,15 @@ def list_templates(objCoda):
 def sync(objCoda):
   """ Sync all docs and tables from the Coda account into the registry """
   objCoda.sync()
+
+
+@clickMain.command()
+@click.option('--output', '-o', required=True, help='Backup output directory')
+@click.option('--doc', help='Limit to a single registered doc name (optional)')
+@click.pass_obj
+def backup(objCoda, output, doc):
+  """ Export every registered table to CSV under <output>/<date>/<doc>/<table>.csv """
+  objCoda.backup(output, doc)
 
 
 @clickMain.command()

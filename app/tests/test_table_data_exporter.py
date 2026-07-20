@@ -373,3 +373,50 @@ def test_export_table_api_error_response():
     finally:
         if os.path.exists(temp_file):
             os.unlink(temp_file)
+
+
+def test_backup_writes_date_dir_and_skips_empty():
+    # REQ-016
+    """backup exports each registered table to <output>/<date>/<doc>/<table>.csv, skipping empty tables."""
+    from datetime import date
+    registry_data = {"DocA": {"id": "d1", "tables": {"T1": "t1", "T2": "t2"}}}
+
+    with tempfile.TemporaryDirectory() as out_dir:
+        with patch('common.template_registry.TemplateRegistry') as MockReg, \
+             patch('common.table_data_exporter.TableDataExporter.export_table_csv') as mock_export:
+            MockReg.return_value.list_templates.return_value = registry_data
+            # T1 has data, T2 is empty -> must be skipped
+            mock_export.side_effect = lambda doc_id, table_id: "col\nval\n" if table_id == "t1" else ""
+
+            runner = CliRunner()
+            result = runner.invoke(clickMain, ['backup', '--output', out_dir])
+
+            assert result.exit_code == 0
+            day = date.today().isoformat()
+            assert os.path.exists(os.path.join(out_dir, day, "DocA", "T1.csv"))
+            assert not os.path.exists(os.path.join(out_dir, day, "DocA", "T2.csv"))  # empty skipped
+            assert "1 exported" in result.output and "1 skipped" in result.output
+
+
+def test_backup_continues_past_failed_table_and_exits_nonzero():
+    # REQ-016
+    """One table's API error must not abort the whole backup; others still export, exit non-zero."""
+    from datetime import date
+    registry_data = {"DocA": {"id": "d1", "tables": {"T1": "t1", "T2": "t2"}}}
+
+    def export(doc_id, table_id):
+        if table_id == "t1":
+            raise Exception("Coda API error: 429 rate limited")
+        return "col\nval\n"
+
+    with tempfile.TemporaryDirectory() as out_dir:
+        with patch('common.template_registry.TemplateRegistry') as MockReg, \
+             patch('common.table_data_exporter.TableDataExporter.export_table_csv', side_effect=export):
+            MockReg.return_value.list_templates.return_value = registry_data
+
+            runner = CliRunner()
+            result = runner.invoke(clickMain, ['backup', '--output', out_dir])
+
+            assert result.exit_code != 0  # incomplete backup fails loudly
+            day = date.today().isoformat()
+            assert os.path.exists(os.path.join(out_dir, day, "DocA", "T2.csv"))  # good table still captured

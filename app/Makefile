@@ -1,4 +1,4 @@
-.PHONY: default ci_build ci_freeze ci_test_build ci_test_freeze docker_build docker_clean docker_run install_freeze install_new run shell shell_clean test test_verbose help list-docs list-controls list-folders list-formulas list-sections list-tables list-views list-columns list-rows get-doc get-section get-column export-table export-template import-template register-template list-templates remove-template
+.PHONY: default ci_build ci_freeze ci_test_build ci_test_freeze docker_build docker_clean docker_run install_freeze install_new run shell shell_clean test test_verbose help list-docs list-controls list-folders list-formulas list-sections list-tables list-views list-columns list-rows get-doc get-section get-column export-table sync backup export-template import-template register-template list-templates remove-template
 
 default: run
 
@@ -113,6 +113,19 @@ export-table:
 		else \
 			pipenv run python coda.py export-table --doc $(DOC) --table $(TABLE); \
 		fi \
+	fi
+
+BACKUP ?= backup
+
+sync:
+	pipenv run python coda.py sync
+
+backup: sync
+	@echo "Backing up to $(BACKUP)/ (override with BACKUP=<dir>, limit with DOC=<name>)"
+	@if [ -n "$(DOC)" ]; then \
+		pipenv run python coda.py backup --output $(BACKUP) --doc $(DOC); \
+	else \
+		pipenv run python coda.py backup --output $(BACKUP); \
 	fi
 
 export-template:
