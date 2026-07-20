@@ -14,10 +14,10 @@ class BaseExporter:
         """Parse API response handling both JSON array and concatenated JSON formats"""
         if not response_json or response_json == "{}":
             return []
-            
+
         try:
             parsed = json.loads(response_json)
-            return parsed if isinstance(parsed, list) else [parsed]
+            data = parsed if isinstance(parsed, list) else [parsed]
         except json.JSONDecodeError:
             # Handle concatenated JSON objects from real API
             data = []
@@ -32,4 +32,11 @@ class BaseExporter:
                     idx += 1
                     if idx >= len(response_json):
                         break
-            return data
+
+        # CON-04: a Coda API error object must abort the export, not become CSV
+        # rows -- mirrors template_importer.py's consumer-side check. Without this,
+        # a 401 wrote ""\r\n""\r\n and exited 0, clobbering the caller's file.
+        for obj in data:
+            if isinstance(obj, dict) and "error" in obj:
+                raise Exception(f"Coda API error: {obj['error']}")
+        return data

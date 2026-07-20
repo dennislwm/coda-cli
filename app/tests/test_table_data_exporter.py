@@ -341,3 +341,35 @@ def test_export_table_with_nested_template_name():
         # API called with both resolved IDs
         mock_list_columns.assert_called_once_with('-vNHwSh0wi', 'grid-abc123')
         mock_list_rows.assert_called_once_with('-vNHwSh0wi', 'grid-abc123')
+
+
+def test_export_table_api_error_response():
+    # REQ-014
+    """export-table exits non-zero and writes no file when Coda returns {"error": ...}
+
+    Regression for the 13pylabel data-loss bug: a 401 made export-table write
+    ""\\r\\n""\\r\\n, print success, and exit 0, clobbering the caller's staged CSV.
+    """
+    with tempfile.NamedTemporaryFile(suffix='.csv', delete=False) as tmp:
+        temp_file = tmp.name
+    os.unlink(temp_file)  # export must not (re)create it on error
+
+    try:
+        with patch('common.pycoda.Pycoda.list_columns') as mock_list_columns, \
+             patch('common.pycoda.Pycoda.list_rows') as mock_list_rows:
+
+            error_json = json.dumps({"error": "401 Unauthorized"})
+            mock_list_columns.return_value = error_json
+            mock_list_rows.return_value = error_json
+
+            runner = CliRunner()
+            result = runner.invoke(clickMain, [
+                'export-table', '--doc', 'test-doc', '--table', 'test-table',
+                '--output', temp_file
+            ])
+
+            assert result.exit_code != 0            # must fail loudly
+            assert not os.path.exists(temp_file)     # must write no file
+    finally:
+        if os.path.exists(temp_file):
+            os.unlink(temp_file)
