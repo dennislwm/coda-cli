@@ -38,6 +38,22 @@ class Coda(object):
       pass
     return strTableId
 
+  def print_result(self, result):
+    """Print a Pycoda result, or abort non-zero if it is a CON-01 error object.
+
+    CON-01 forbids Pycoda from raising, so this check has to live consumer-side --
+    the same check template_importer.py:61 does for document creation.
+    ponytail: sits in coda.py despite CON-03's "thin dispatcher" rule because
+    CON-01 rules out the alternative; move it if CON-01 ever changes.
+    """
+    try:
+      parsed = json.loads(result)
+    except (TypeError, ValueError):
+      parsed = None
+    if isinstance(parsed, dict) and "error" in parsed:
+      raise click.ClickException(f"Coda API error: {parsed['error']}")
+    print(result)  # no error envelope; safe to emit
+
   # --- commands ---
 
   def verify_auth(self):
@@ -110,13 +126,13 @@ class Coda(object):
     strTableId = self.resolve_table_id(strDocId, strTableId)
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.update_row(strDocId, strTableId, strRowId, dictCells)
-    print(result)
+    self.print_result(result)
 
   def upsert_row(self, strDocId, strTableId, dictCells, lstKeyColumns=None):
     strTableId = self.resolve_table_id(strDocId, strTableId)
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.upsert_row(strDocId, strTableId, dictCells, lstKeyColumns)
-    print(result)
+    self.print_result(result)
 
   def export_template(self, strDocId, strOutputFile=None):
     """Export document as YAML template using TemplateExporter"""

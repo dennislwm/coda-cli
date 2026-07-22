@@ -256,6 +256,29 @@ def test_upsert_row_wraps_cells(monkeypatch):
 @pytest.mark.parametrize('command,extra', [
     ('update-row', ['--row', 'i-abc123', '--cells', 'c-abc=val']),
     ('upsert-row', ['--cells', 'c-abc=val']),
+])
+def test_write_path_fails_on_api_error(runner, command, extra):
+    """REQ-020: an {"error": ...} from a write must exit non-zero, not print as success."""
+    method = command.replace('-', '_')
+    with patch('common.template_registry.TemplateRegistry') as mock_registry_class, \
+         patch(f'common.pycoda.Pycoda.{method}') as mock_write:
+
+        mock_registry = mock_registry_class.return_value
+        mock_registry.get_table_id.return_value = 'grid-abc123'
+        mock_registry.get_template_doc_id.return_value = '-vNHwSh0wi'
+        mock_registry.is_template_registered.return_value = True
+        mock_write.return_value = json.dumps({"error": "401 Unauthorized"})
+
+        result = runner.invoke(clickMain, [
+            command, '--doc', 'PokemonLeesarebest', '--table', 'Cards',
+        ] + extra)
+
+        assert result.exit_code != 0
+        assert "401 Unauthorized" in result.output
+
+@pytest.mark.parametrize('command,extra', [
+    ('update-row', ['--row', 'i-abc123', '--cells', 'c-abc=val']),
+    ('upsert-row', ['--cells', 'c-abc=val']),
     ('get-column', ['--column', 'c-abc']),
 ])
 def test_write_path_resolves_table_name(runner, command, extra):
