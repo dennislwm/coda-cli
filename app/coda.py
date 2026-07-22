@@ -52,64 +52,64 @@ class Coda(object):
 
   def verify_auth(self):
     result = self.objCoda.verify_auth()
-    print(result)
+    self.print_result(result)
 
   def get_column(self, strDocId, strTableId, strColumnId):
     strTableId = self.resolve_table_id(strDocId, strTableId)
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.get_column(strDocId, strTableId, strColumnId)
-    print(result)
+    self.print_result(result)
 
   def get_doc(self, strDocId):
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.get_doc(strDocId)
-    print(result)
+    self.print_result(result)
 
   def get_section(self, strDocId, strSectionId):
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.get_section(strDocId, strSectionId)
-    print(result)
+    self.print_result(result)
 
   def list_docs(self):
     result = self.objCoda.list_docs()
-    print(result)
+    self.print_result(result)
 
   def list_controls(self, strDocId):
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_controls(strDocId)
-    print(result)
+    self.print_result(result)
 
   def list_formulas(self, strDocId):
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_formulas(strDocId)
-    print(result)
+    self.print_result(result)
 
   def list_sections(self, strDocId):
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_sections(strDocId)
-    print(result)
+    self.print_result(result)
 
   def list_tables(self, strDocId):
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_tables(strDocId)
-    print(result)
+    self.print_result(result)
 
   def list_views(self, strDocId):
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_views(strDocId)
-    print(result)
+    self.print_result(result)
 
   def list_columns(self, strDocId, strTableId):
     strTableId = self.resolve_table_id(strDocId, strTableId)
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_columns(strDocId, strTableId)
-    print(result)
+    self.print_result(result)
 
   def list_rows(self, strDocId, strTableId):
     strTableId = self.resolve_table_id(strDocId, strTableId)
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_rows(strDocId, strTableId)
-    print(result)
+    self.print_result(result)
 
   def update_row(self, strDocId, strTableId, strRowId, dictCells):
     strTableId = self.resolve_table_id(strDocId, strTableId)

@@ -276,6 +276,31 @@ def test_write_path_fails_on_api_error(runner, command, extra):
         assert "401 Unauthorized" in result.output
 
 @pytest.mark.parametrize('command,extra', [
+    ('verify-auth', []),
+    ('list-docs', []),
+    ('get-doc', ['--doc', 'PokemonLeesarebest']),
+    ('get-section', ['--doc', 'PokemonLeesarebest', '--section', 's-abc']),
+    ('get-column', ['--doc', 'PokemonLeesarebest', '--table', 'Cards', '--column', 'c-abc']),
+    ('list-controls', ['--doc', 'PokemonLeesarebest']),
+    ('list-formulas', ['--doc', 'PokemonLeesarebest']),
+    ('list-sections', ['--doc', 'PokemonLeesarebest']),
+    ('list-tables', ['--doc', 'PokemonLeesarebest']),
+    ('list-views', ['--doc', 'PokemonLeesarebest']),
+    ('list-columns', ['--doc', 'PokemonLeesarebest', '--table', 'Cards']),
+    ('list-rows', ['--doc', 'PokemonLeesarebest', '--table', 'Cards']),
+])
+def test_read_path_fails_on_api_error(runner, command, extra):
+    """REQ-024: an {"error": ...} from a read/list must exit non-zero, not print as data."""
+    method = command.replace('-', '_')
+    with patch(f'common.pycoda.Pycoda.{method}') as mock_read:
+        mock_read.return_value = json.dumps({"error": "401 Unauthorized"})
+
+        result = runner.invoke(clickMain, [command] + extra)
+
+        assert result.exit_code != 0
+        assert "401 Unauthorized" in result.output
+
+@pytest.mark.parametrize('command,extra', [
     ('update-row', ['--row', 'i-abc123', '--cells', 'c-abc=val']),
     ('upsert-row', ['--cells', 'c-abc=val']),
     ('get-column', ['--column', 'c-abc']),
