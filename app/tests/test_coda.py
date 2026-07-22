@@ -252,6 +252,21 @@ def test_upsert_row_wraps_cells(monkeypatch):
         "keyColumns": ['c-abc'],
     }
 
+def test_mutation_status_hits_endpoint(monkeypatch):
+    """ADR-09: mutation_status GETs /mutationStatus/{requestId} and returns the completed flag."""
+    from common.pycoda import Pycoda
+    obj = Pycoda('fake-key')
+    captured = {}
+    def fake_get(endpoint):
+        captured['endpoint'] = endpoint
+        return {"completed": True}
+    monkeypatch.setattr(obj.coda, 'get', fake_get)
+
+    result = obj.mutation_status('req-abc123')
+
+    assert captured['endpoint'] == '/mutationStatus/req-abc123'
+    assert json.loads(result) == {"completed": True}
+
 @pytest.mark.parametrize('command,extra', [
     ('update-row', ['--row', 'i-abc123', '--cells', 'c-abc=val']),
     ('upsert-row', ['--cells', 'c-abc=val']),
@@ -288,6 +303,7 @@ def test_write_path_fails_on_api_error(runner, command, extra):
     ('list-views', ['--doc', 'PokemonLeesarebest']),
     ('list-columns', ['--doc', 'PokemonLeesarebest', '--table', 'Cards']),
     ('list-rows', ['--doc', 'PokemonLeesarebest', '--table', 'Cards']),
+    ('mutation-status', ['--request-id', 'req-abc123']),
 ])
 def test_read_path_fails_on_api_error(runner, command, extra):
     """REQ-024: an {"error": ...} from a read/list must exit non-zero, not print as data."""

@@ -101,6 +101,10 @@ get-column:
 	@echo "Usage: make get-column DOC=<doc_id> TABLE=<table_id> COLUMN=<column_id>"
 	@if [ -n "$(DOC)" ] && [ -n "$(TABLE)" ] && [ -n "$(COLUMN)" ]; then pipenv run python coda.py get-column --doc $(DOC) --table $(TABLE) --column $(COLUMN) | jq; fi
 
+mutation-status:
+	@echo "Usage: make mutation-status REQUEST=<request_id>"
+	@if [ -n "$(REQUEST)" ]; then pipenv run python coda.py mutation-status --request-id $(REQUEST) | jq; fi
+
 export-table:
 	@echo "Usage: make export-table DOC=<doc_id> TABLE=<table_id> [OUTPUT=<file.csv>]"
 	@if [ -n "$(DOC)" ] && [ -n "$(TABLE)" ]; then \

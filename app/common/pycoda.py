@@ -160,6 +160,15 @@ class Pycoda():
     except Exception as e:
       return json.dumps({"error": str(e)})
 
+  def mutation_status(self, strRequestId):
+    """ Returns whether a queued write (the requestId in a 202 body) has been applied (ADR-09) """
+    assert(strRequestId)
+    try:
+      val = self.coda.get(f"/mutationStatus/{strRequestId}")
+    except Exception as e:
+      return json.dumps({"error": str(e)})
+    return json.dumps(val)
+
   def create_document(self, name):
     """ Create a new document """
     assert(name)

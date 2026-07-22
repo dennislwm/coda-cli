@@ -123,6 +123,10 @@ class Coda(object):
     result = self.objCoda.upsert_row(strDocId, strTableId, dictCells, lstKeyColumns)
     self.print_result(result)
 
+  def mutation_status(self, strRequestId):
+    result = self.objCoda.mutation_status(strRequestId)
+    self.print_result(result)
+
   def export_template(self, strDocId, strOutputFile=None):
     """Export document as YAML template using TemplateExporter"""
     strDocId = self.resolve_doc_id(strDocId)
@@ -353,6 +357,14 @@ def get_doc(objCoda, doc):
 def get_section(objCoda, doc, section):
   """ Returns a section """
   objCoda.get_section(doc, section)
+
+
+@clickMain.command()
+@click.option('--request-id', required=True, help='requestId from a write command 202 response')
+@click.pass_obj
+def mutation_status(objCoda, request_id):
+  """ Reports whether a queued write has been applied yet """
+  objCoda.mutation_status(request_id)
 
 
 @clickMain.command()
