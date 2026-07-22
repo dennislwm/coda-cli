@@ -37,10 +37,7 @@ class TableDataExporter(BaseExporter):
             if "JSON" in str(e):
                 raise Exception(f"Failed to parse API response: {str(e)}")
             raise
-        except Exception as e:
-            # Re-raise with more context
-            raise Exception(f"Failed to export table data: {str(e)}")
-    
+
     def _generate_csv(self, columns, rows):
         """Generate CSV content from columns and rows data"""
         output = StringIO()
