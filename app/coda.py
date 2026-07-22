@@ -41,18 +41,12 @@ class Coda(object):
   def print_result(self, result):
     """Print a Pycoda result, or abort non-zero if it is a CON-01 error object.
 
-    CON-01 forbids Pycoda from raising, so this check has to live consumer-side --
-    the same check template_importer.py:61 does for document creation.
-    ponytail: sits in coda.py despite CON-03's "thin dispatcher" rule because
-    CON-01 rules out the alternative; move it if CON-01 ever changes.
+    ponytail: lives in coda.py despite CON-03's "thin dispatcher" rule because
+    CON-01 forbids Pycoda from raising; move it if CON-01 ever changes.
     """
-    try:
-      parsed = json.loads(result)
-    except (TypeError, ValueError):
-      parsed = None
-    if isinstance(parsed, dict) and "error" in parsed:
-      raise click.ClickException(f"Coda API error: {parsed['error']}")
-    print(result)  # no error envelope; safe to emit
+    if isinstance(result, str) and result.lstrip().startswith('{"error"'):
+      raise click.ClickException(f"Coda API error: {result}")
+    print(result)
 
   # --- commands ---
 
