@@ -45,6 +45,7 @@ class Coda(object):
     print(result)
 
   def get_column(self, strDocId, strTableId, strColumnId):
+    strTableId = self.resolve_table_id(strDocId, strTableId)
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.get_column(strDocId, strTableId, strColumnId)
     print(result)
@@ -106,11 +107,13 @@ class Coda(object):
     print(result)
 
   def update_row(self, strDocId, strTableId, strRowId, dictCells):
+    strTableId = self.resolve_table_id(strDocId, strTableId)
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.update_row(strDocId, strTableId, strRowId, dictCells)
     print(result)
 
   def upsert_row(self, strDocId, strTableId, dictCells, lstKeyColumns=None):
+    strTableId = self.resolve_table_id(strDocId, strTableId)
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.upsert_row(strDocId, strTableId, dictCells, lstKeyColumns)
     print(result)

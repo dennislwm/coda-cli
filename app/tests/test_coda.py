@@ -252,3 +252,28 @@ def test_upsert_row_wraps_cells(monkeypatch):
         "rows": [{"cells": [{"column": "c-abc", "value": "val"}]}],
         "keyColumns": ['c-abc'],
     }
+
+@pytest.mark.parametrize('command,extra', [
+    ('update-row', ['--row', 'i-abc123', '--cells', 'c-abc=val']),
+    ('upsert-row', ['--cells', 'c-abc=val']),
+    ('get-column', ['--column', 'c-abc']),
+])
+def test_write_path_resolves_table_name(runner, command, extra):
+    """REQ-019: every --table command must resolve the name like list_rows does (ADR-06)."""
+    method = command.replace('-', '_')
+    with patch('common.template_registry.TemplateRegistry') as mock_registry_class, \
+         patch(f'common.pycoda.Pycoda.{method}') as mock_write:
+
+        mock_registry = mock_registry_class.return_value
+        mock_registry.get_table_id.return_value = 'grid-abc123'
+        mock_registry.get_template_doc_id.return_value = '-vNHwSh0wi'
+        mock_registry.is_template_registered.return_value = True
+        mock_write.return_value = {"id": "i-abc123"}
+
+        result = runner.invoke(clickMain, [
+            command, '--doc', 'PokemonLeesarebest', '--table', 'Cards',
+        ] + extra)
+
+        assert result.exit_code == 0
+        mock_registry.get_table_id.assert_called_once_with('PokemonLeesarebest', 'Cards')
+        assert mock_write.call_args[0][:2] == ('-vNHwSh0wi', 'grid-abc123')
