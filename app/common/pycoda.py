@@ -40,15 +40,6 @@ class Pycoda():
       return json.dumps({"error": str(e)})
     return self.json_items(list)
 
-  def list_folders(self, strDocId):
-    """ Returns a list of folders in DocId """
-    assert(strDocId)
-    try:
-      list = self.coda.list_folders(strDocId)
-    except Exception as e:
-      return json.dumps({"error": str(e)})
-    return self.json_items(list)
-
   def list_formulas(self, strDocId):
     """ Returns a list of formulas in DocId """
     assert(strDocId)

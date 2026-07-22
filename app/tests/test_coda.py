@@ -52,7 +52,6 @@ def _assert_yaml_structure(content):
     ([], "v"),
     (['list-docs'], "doc"),
     (['list-controls', '--doc', strDoc], "control"),
-    (['list-folders', '--doc', strDoc], None),
     (['list-formulas', '--doc', strDoc], None),
     (['list-sections', '--doc', strDoc], "page"),
     (['list-tables', '--doc', strDoc], "table"),

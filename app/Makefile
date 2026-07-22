@@ -1,4 +1,4 @@
-.PHONY: default ci_build ci_freeze ci_test_build ci_test_freeze docker_build docker_clean docker_run install_freeze install_new run shell shell_clean test test_verbose help list-docs list-controls list-folders list-formulas list-sections list-tables list-views list-columns list-rows get-doc get-section get-column export-table sync backup export-template import-template register-template list-templates remove-template
+.PHONY: default ci_build ci_freeze ci_test_build ci_test_freeze docker_build docker_clean docker_run install_freeze install_new run shell shell_clean test test_verbose help list-docs list-controls list-formulas list-sections list-tables list-views list-columns list-rows get-doc get-section get-column export-table sync backup export-template import-template register-template list-templates remove-template
 
 default: run
 
@@ -64,10 +64,6 @@ list-docs:
 list-controls:
 	@echo "Usage: make list-controls DOC=<doc_id>"
 	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-controls --doc $(DOC) | jq; fi
-
-list-folders:
-	@echo "Usage: make list-folders DOC=<doc_id>"
-	@if [ -n "$(DOC)" ]; then pipenv run python coda.py list-folders --doc $(DOC) | jq; fi
 
 list-formulas:
 	@echo "Usage: make list-formulas DOC=<doc_id>"

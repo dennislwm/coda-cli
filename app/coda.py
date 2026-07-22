@@ -85,11 +85,6 @@ class Coda(object):
     result = self.objCoda.list_controls(strDocId)
     print(result)
 
-  def list_folders(self, strDocId):
-    strDocId = self.resolve_doc_id(strDocId)
-    result = self.objCoda.list_folders(strDocId)
-    print(result)
-
   def list_formulas(self, strDocId):
     strDocId = self.resolve_doc_id(strDocId)
     result = self.objCoda.list_formulas(strDocId)
@@ -262,14 +257,6 @@ def list_docs(objCoda):
 def list_controls(objCoda, doc):
   """ Returns the list of controls in a doc """
   objCoda.list_controls(doc)
-
-
-@clickMain.command()
-@click.option('--doc', required=True)
-@click.pass_obj
-def list_folders(objCoda, doc):
-  """ Returns the list of folders in a doc """
-  objCoda.list_folders(doc)
 
 
 @clickMain.command()
